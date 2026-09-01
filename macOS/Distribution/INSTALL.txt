@@ -1,0 +1,22 @@
+Lilt — personal macOS build
+===========================
+
+This archive contains a universal app for Apple Silicon and Intel Macs.
+YouTube playback helpers are included inside Lilt.app; Homebrew is not
+required for normal streaming.
+
+1. Drag Lilt.app to Applications.
+2. Try to open Lilt once. If macOS blocks it, open:
+
+   System Settings → Privacy & Security → Security → Open Anyway
+
+   Confirm Open in the second dialog.
+
+For this self-built copy only, the Terminal equivalent is:
+
+   xattr -dr com.apple.quarantine "/Applications/Lilt.app"
+   open "/Applications/Lilt.app"
+
+This personal build is certificate-signed but is not notarized by Apple.
+A warning-free downloadable build requires an Apple Developer Program
+membership, a Developer ID Application certificate and Apple notarization.

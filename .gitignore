@@ -1,0 +1,26 @@
+# macOS and logs
+.DS_Store
+Thumbs.db
+*.log
+
+# Xcode build and user state
+macOS/DerivedData*/
+macOS/Distribution/*.zip
+**/xcuserdata/
+*.xcuserstate
+*.xcresult
+*.profraw
+
+# Local credentials and signing material
+.env
+.env.*
+!.env.example
+*.p12
+*.cer
+*.mobileprovision
+*.provisionprofile
+
+# Project scratch and debug artifacts
+.shots/
+.tmp_verify/
+.debug/

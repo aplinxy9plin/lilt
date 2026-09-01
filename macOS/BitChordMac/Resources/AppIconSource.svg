@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="surface" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8B4DFF"/>
+      <stop offset="0.48" stop-color="#D83BDF"/>
+      <stop offset="1" stop-color="#FF287F"/>
+    </linearGradient>
+    <radialGradient id="highlight" cx="0.25" cy="0.12" r="0.9">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.26"/>
+      <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0.04"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.18"/>
+      <stop offset="0.38" stop-color="#FFFFFF" stop-opacity="0.02"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.08"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="24"/>
+      <feOffset dy="28"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.17 0 0 0 0 0.04 0 0 0 0 0.24 0 0 0 0.34 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="waveShadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10"/>
+      <feOffset dy="12"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.25 0 0 0 0 0.02 0 0 0 0 0.28 0 0 0 0.24 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <clipPath id="iconMask">
+      <rect x="72" y="62" width="880" height="880" rx="208"/>
+    </clipPath>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <rect x="72" y="62" width="880" height="880" rx="208" fill="url(#surface)"/>
+    <g clip-path="url(#iconMask)">
+      <rect x="72" y="62" width="880" height="880" fill="url(#highlight)"/>
+      <rect x="72" y="62" width="880" height="880" fill="url(#gloss)"/>
+      <ellipse cx="806" cy="792" rx="340" ry="270" fill="#A10C89" opacity="0.13"/>
+    </g>
+    <rect x="74" y="64" width="876" height="876" rx="206" fill="none" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="4"/>
+  </g>
+
+  <g fill="#FFFFFF" filter="url(#waveShadow)">
+    <rect x="302" y="436" width="38" height="152" rx="19"/>
+    <rect x="366" y="376" width="38" height="272" rx="19"/>
+    <rect x="430" y="322" width="38" height="380" rx="19"/>
+    <rect x="494" y="405" width="38" height="214" rx="19"/>
+    <rect x="558" y="342" width="38" height="340" rx="19"/>
+    <rect x="622" y="388" width="38" height="248" rx="19"/>
+    <rect x="686" y="447" width="38" height="130" rx="19"/>
+  </g>
+</svg>

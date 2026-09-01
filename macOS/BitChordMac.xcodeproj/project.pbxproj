@@ -1,0 +1,608 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 71;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000010000000000000001 /* BitChordMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* BitChordMacApp.swift */; };
+		A10000010000000000000002 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000002 /* Models.swift */; };
+		A10000010000000000000003 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000003 /* AppModel.swift */; };
+		A10000010000000000000004 /* YouTubeMusicAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004 /* YouTubeMusicAPI.swift */; };
+		A10000010000000000000005 /* Views.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005 /* Views.swift */; };
+		A10000010000000000000006 /* PlaybackControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000008 /* PlaybackControllerTests.swift */; };
+		A10000010000000000000007 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000010000000000000009 /* XCTest.framework */; };
+		A10000010000000000000008 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000002 /* Models.swift */; };
+		A10000010000000000000009 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000003 /* AppModel.swift */; };
+		A10000010000000000000010 /* YouTubeMusicAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004 /* YouTubeMusicAPI.swift */; };
+		A10000010000000000000011 /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000010 /* DownloadManager.swift */; };
+		A10000010000000000000012 /* DownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000010 /* DownloadManager.swift */; };
+		A10000010000000000000013 /* DownloadManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000011 /* DownloadManagerTests.swift */; };
+		A10000010000000000000014 /* YouTubeMusicWriteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000012 /* YouTubeMusicWriteTests.swift */; };
+		A10000010000000000000015 /* SourceModules.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000013 /* SourceModules.swift */; };
+		A10000010000000000000016 /* SourceModules.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000013 /* SourceModules.swift */; };
+		A10000010000000000000017 /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000010000000000000014 /* JavaScriptCore.framework */; };
+		A10000010000000000000018 /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000010000000000000014 /* JavaScriptCore.framework */; };
+		A10000010000000000000019 /* SourceModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000015 /* SourceModuleTests.swift */; };
+		A10000010000000000000020 /* ListeningStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000016 /* ListeningStats.swift */; };
+		A10000010000000000000021 /* ListeningStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000016 /* ListeningStats.swift */; };
+		A10000010000000000000022 /* ReplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000017 /* ReplayView.swift */; };
+		A10000010000000000000023 /* ListeningStatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000018 /* ListeningStatsTests.swift */; };
+		A10000010000000000000024 /* BackupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000019 /* BackupManager.swift */; };
+		A10000010000000000000025 /* BackupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000019 /* BackupManager.swift */; };
+		A10000010000000000000026 /* BackupManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001A /* BackupManagerTests.swift */; };
+		A10000010000000000000027 /* Scrobbling.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001B /* Scrobbling.swift */; };
+		A10000010000000000000028 /* Scrobbling.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001B /* Scrobbling.swift */; };
+		A10000010000000000000029 /* ScrobblingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001C /* ScrobblingTests.swift */; };
+		A10000010000000000000030 /* Lyrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001D /* Lyrics.swift */; };
+		A10000010000000000000031 /* Lyrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001D /* Lyrics.swift */; };
+		A10000010000000000000032 /* LyricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001E /* LyricsTests.swift */; };
+		A10000010000000000000033 /* ArtworkTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001F /* ArtworkTheme.swift */; };
+		A10000010000000000000034 /* ArtworkTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001F /* ArtworkTheme.swift */; };
+		A10000010000000000000035 /* ArtworkThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000020 /* ArtworkThemeTests.swift */; };
+		B1C100000000000000000001 /* Resources/BitChord.icns in Resources */ = {isa = PBXBuildFile; fileRef = B1C100000000000000000002 /* Resources/BitChord.icns */; };
+		E1B100000000000000000001 /* EmbeddedLyrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000003 /* EmbeddedLyrics.swift */; };
+		E1B100000000000000000002 /* EmbeddedLyrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000003 /* EmbeddedLyrics.swift */; };
+		E1B100000000000000000004 /* EmbeddedLyricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000005 /* EmbeddedLyricsTests.swift */; };
+		E1B100000000000000000006 /* LocalLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000008 /* LocalLibrary.swift */; };
+		E1B100000000000000000007 /* LocalLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000008 /* LocalLibrary.swift */; };
+		E1B100000000000000000009 /* LocalLibraryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B10000000000000000000A /* LocalLibraryTests.swift */; };
+		E1B10000000000000000000B /* Canvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B10000000000000000000D /* Canvas.swift */; };
+		E1B10000000000000000000C /* Canvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B10000000000000000000D /* Canvas.swift */; };
+		E1B10000000000000000000E /* CanvasTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B10000000000000000000F /* CanvasTests.swift */; };
+		E1B100000000000000000010 /* Equalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000012 /* Equalizer.swift */; };
+		E1B100000000000000000011 /* Equalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000012 /* Equalizer.swift */; };
+		E1B100000000000000000013 /* EqualizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000014 /* EqualizerTests.swift */; };
+		E1B100000000000000000015 /* Automix.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000017 /* Automix.swift */; };
+		E1B100000000000000000016 /* Automix.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000017 /* Automix.swift */; };
+		E1B100000000000000000018 /* AutomixTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000019 /* AutomixTests.swift */; };
+		E1B10000000000000000001A /* AutomixBridge.mm in Sources */ = {isa = PBXBuildFile; fileRef = E1B10000000000000000001C /* AutomixBridge.mm */; };
+		E1B10000000000000000001B /* AutomixBridge.mm in Sources */ = {isa = PBXBuildFile; fileRef = E1B10000000000000000001C /* AutomixBridge.mm */; };
+		E1B10000000000000000001F /* audio_analysis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000021 /* audio_analysis.cpp */; };
+		E1B100000000000000000020 /* audio_analysis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000021 /* audio_analysis.cpp */; };
+		E1B100000000000000000022 /* tempo_analysis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000024 /* tempo_analysis.cpp */; };
+		E1B100000000000000000023 /* tempo_analysis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000024 /* tempo_analysis.cpp */; };
+		E1B100000000000000000025 /* resampler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000027 /* resampler.cpp */; };
+		E1B100000000000000000026 /* resampler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E1B100000000000000000027 /* resampler.cpp */; };
+		F2C100000000000000000001 /* ReplayStories.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2C100000000000000000004 /* ReplayStories.swift */; };
+		F2C100000000000000000002 /* ReplayStories.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2C100000000000000000004 /* ReplayStories.swift */; };
+		F2C100000000000000000003 /* ReplayStoriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2C100000000000000000005 /* ReplayStoriesTests.swift */; };
+		F3D100000000000000000001 /* ArtistFacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3D100000000000000000003 /* ArtistFacts.swift */; };
+		F3D100000000000000000002 /* ArtistFacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3D100000000000000000003 /* ArtistFacts.swift */; };
+		F3D100000000000000000004 /* ArtistFactsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3D100000000000000000005 /* ArtistFactsTests.swift */; };
+		F4D100000000000000000001 /* CanvasCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4D100000000000000000003 /* CanvasCache.swift */; };
+		F4D100000000000000000002 /* CanvasCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4D100000000000000000003 /* CanvasCache.swift */; };
+		F4D100000000000000000004 /* SpotifyCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4D100000000000000000006 /* SpotifyCanvas.swift */; };
+		F4D100000000000000000005 /* SpotifyCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4D100000000000000000006 /* SpotifyCanvas.swift */; };
+		F4D100000000000000000007 /* CanvasHLSResourceLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4D100000000000000000009 /* CanvasHLSResourceLoader.swift */; };
+		F4D100000000000000000008 /* CanvasHLSResourceLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4D100000000000000000009 /* CanvasHLSResourceLoader.swift */; };
+		F5D100000000000000000001 /* AudioStreamCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5D100000000000000000004 /* AudioStreamCache.swift */; };
+		F5D100000000000000000002 /* AudioStreamCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5D100000000000000000004 /* AudioStreamCache.swift */; };
+		F5D100000000000000000003 /* AudioStreamCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5D100000000000000000005 /* AudioStreamCacheTests.swift */; };
+		F6D100000000000000000001 /* MusicLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D100000000000000000004 /* MusicLink.swift */; };
+		F6D100000000000000000002 /* MusicLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D100000000000000000004 /* MusicLink.swift */; };
+		F6D100000000000000000003 /* MusicLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D100000000000000000005 /* MusicLinkTests.swift */; };
+		F7D100000000000000000001 /* JioSaavn.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D100000000000000000003 /* JioSaavn.swift */; };
+		F7D100000000000000000002 /* JioSaavn.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D100000000000000000003 /* JioSaavn.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A20000010000000000000000 /* Lilt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lilt.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000010000000000000001 /* BitChordMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitChordMacApp.swift; sourceTree = "<group>"; };
+		A20000010000000000000002 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		A20000010000000000000003 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		A20000010000000000000004 /* YouTubeMusicAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouTubeMusicAPI.swift; sourceTree = "<group>"; };
+		A20000010000000000000005 /* Views.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views.swift; sourceTree = "<group>"; };
+		A20000010000000000000007 /* BitChordTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BitChordTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000010000000000000008 /* PlaybackControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackControllerTests.swift; sourceTree = "<group>"; };
+		A20000010000000000000009 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
+		A20000010000000000000010 /* DownloadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManager.swift; sourceTree = "<group>"; };
+		A20000010000000000000011 /* DownloadManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadManagerTests.swift; sourceTree = "<group>"; };
+		A20000010000000000000012 /* YouTubeMusicWriteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouTubeMusicWriteTests.swift; sourceTree = "<group>"; };
+		A20000010000000000000013 /* SourceModules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceModules.swift; sourceTree = "<group>"; };
+		A20000010000000000000014 /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		A20000010000000000000015 /* SourceModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceModuleTests.swift; sourceTree = "<group>"; };
+		A20000010000000000000016 /* ListeningStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListeningStats.swift; sourceTree = "<group>"; };
+		A20000010000000000000017 /* ReplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplayView.swift; sourceTree = "<group>"; };
+		A20000010000000000000018 /* ListeningStatsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListeningStatsTests.swift; sourceTree = "<group>"; };
+		A20000010000000000000019 /* BackupManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupManager.swift; sourceTree = "<group>"; };
+		A2000001000000000000001A /* BackupManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupManagerTests.swift; sourceTree = "<group>"; };
+		A2000001000000000000001B /* Scrobbling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scrobbling.swift; sourceTree = "<group>"; };
+		A2000001000000000000001C /* ScrobblingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrobblingTests.swift; sourceTree = "<group>"; };
+		A2000001000000000000001D /* Lyrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lyrics.swift; sourceTree = "<group>"; };
+		A2000001000000000000001E /* LyricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsTests.swift; sourceTree = "<group>"; };
+		A2000001000000000000001F /* ArtworkTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtworkTheme.swift; sourceTree = "<group>"; };
+		A20000010000000000000020 /* ArtworkThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtworkThemeTests.swift; sourceTree = "<group>"; };
+		B1C100000000000000000002 /* Resources/BitChord.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Resources/BitChord.icns; sourceTree = "<group>"; };
+		E1B100000000000000000003 /* EmbeddedLyrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbeddedLyrics.swift; sourceTree = "<group>"; };
+		E1B100000000000000000005 /* EmbeddedLyricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbeddedLyricsTests.swift; sourceTree = "<group>"; };
+		E1B100000000000000000008 /* LocalLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalLibrary.swift; sourceTree = "<group>"; };
+		E1B10000000000000000000A /* LocalLibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalLibraryTests.swift; sourceTree = "<group>"; };
+		E1B10000000000000000000D /* Canvas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Canvas.swift; sourceTree = "<group>"; };
+		E1B10000000000000000000F /* CanvasTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasTests.swift; sourceTree = "<group>"; };
+		E1B100000000000000000012 /* Equalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Equalizer.swift; sourceTree = "<group>"; };
+		E1B100000000000000000014 /* EqualizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EqualizerTests.swift; sourceTree = "<group>"; };
+		E1B100000000000000000017 /* Automix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Automix.swift; sourceTree = "<group>"; };
+		E1B100000000000000000019 /* AutomixTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomixTests.swift; sourceTree = "<group>"; };
+		E1B10000000000000000001C /* AutomixBridge.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AutomixBridge.mm; sourceTree = "<group>"; };
+		E1B10000000000000000001D /* AutomixBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AutomixBridge.h; sourceTree = "<group>"; };
+		E1B10000000000000000001E /* BitChord-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BitChord-Bridging-Header.h"; sourceTree = "<group>"; };
+		E1B100000000000000000021 /* audio_analysis.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = audio_analysis.cpp; path = ../../native/analyzer/audio_analysis.cpp; sourceTree = "<group>"; };
+		E1B100000000000000000024 /* tempo_analysis.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = tempo_analysis.cpp; path = ../../native/analyzer/tempo_analysis.cpp; sourceTree = "<group>"; };
+		E1B100000000000000000027 /* resampler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = resampler.cpp; path = ../../native/analyzer/resampler.cpp; sourceTree = "<group>"; };
+		F2C100000000000000000004 /* ReplayStories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplayStories.swift; sourceTree = "<group>"; };
+		F2C100000000000000000005 /* ReplayStoriesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplayStoriesTests.swift; sourceTree = "<group>"; };
+		F3D100000000000000000003 /* ArtistFacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistFacts.swift; sourceTree = "<group>"; };
+		F3D100000000000000000005 /* ArtistFactsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistFactsTests.swift; sourceTree = "<group>"; };
+		F4D100000000000000000003 /* CanvasCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasCache.swift; sourceTree = "<group>"; };
+		F4D100000000000000000006 /* SpotifyCanvas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyCanvas.swift; sourceTree = "<group>"; };
+		F4D100000000000000000009 /* CanvasHLSResourceLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasHLSResourceLoader.swift; sourceTree = "<group>"; };
+		F5D100000000000000000004 /* AudioStreamCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioStreamCache.swift; sourceTree = "<group>"; };
+		F5D100000000000000000005 /* AudioStreamCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioStreamCacheTests.swift; sourceTree = "<group>"; };
+		F6D100000000000000000004 /* MusicLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicLink.swift; sourceTree = "<group>"; };
+		F6D100000000000000000005 /* MusicLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicLinkTests.swift; sourceTree = "<group>"; };
+		F6D100000000000000000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F7D100000000000000000003 /* JioSaavn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JioSaavn.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A30000010000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000010000000000000017 /* JavaScriptCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A30000010000000000000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000010000000000000007 /* XCTest.framework in Frameworks */,
+				A10000010000000000000018 /* JavaScriptCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		68258E3830467EEA008D2170 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000014 /* JavaScriptCore.framework */,
+				A20000010000000000000009 /* XCTest.framework */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		A40000010000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				A40000010000000000000002 /* BitChordMac */,
+				A40000010000000000000004 /* BitChordTests */,
+				A40000010000000000000003 /* Products */,
+				68258E3830467EEA008D2170 /* Recovered References */,
+			);
+			sourceTree = "<group>";
+		};
+		A40000010000000000000002 /* BitChordMac */ = {
+			isa = PBXGroup;
+			children = (
+				F6D100000000000000000006 /* Info.plist */,
+				B1C100000000000000000002 /* Resources/BitChord.icns */,
+				A20000010000000000000001 /* BitChordMacApp.swift */,
+				A20000010000000000000002 /* Models.swift */,
+				F6D100000000000000000004 /* MusicLink.swift */,
+				A20000010000000000000003 /* AppModel.swift */,
+				A20000010000000000000004 /* YouTubeMusicAPI.swift */,
+				F5D100000000000000000004 /* AudioStreamCache.swift */,
+				A20000010000000000000010 /* DownloadManager.swift */,
+				A20000010000000000000013 /* SourceModules.swift */,
+				F7D100000000000000000003 /* JioSaavn.swift */,
+				A20000010000000000000016 /* ListeningStats.swift */,
+				F3D100000000000000000003 /* ArtistFacts.swift */,
+				A20000010000000000000019 /* BackupManager.swift */,
+				A2000001000000000000001B /* Scrobbling.swift */,
+				A2000001000000000000001D /* Lyrics.swift */,
+				A2000001000000000000001F /* ArtworkTheme.swift */,
+				E1B100000000000000000003 /* EmbeddedLyrics.swift */,
+				E1B100000000000000000008 /* LocalLibrary.swift */,
+				E1B10000000000000000000D /* Canvas.swift */,
+				F4D100000000000000000003 /* CanvasCache.swift */,
+				F4D100000000000000000009 /* CanvasHLSResourceLoader.swift */,
+				F4D100000000000000000006 /* SpotifyCanvas.swift */,
+				E1B100000000000000000012 /* Equalizer.swift */,
+				E1B100000000000000000017 /* Automix.swift */,
+				E1B10000000000000000001C /* AutomixBridge.mm */,
+				E1B10000000000000000001D /* AutomixBridge.h */,
+				E1B10000000000000000001E /* BitChord-Bridging-Header.h */,
+				E1B100000000000000000021 /* audio_analysis.cpp */,
+				E1B100000000000000000024 /* tempo_analysis.cpp */,
+				E1B100000000000000000027 /* resampler.cpp */,
+				F2C100000000000000000004 /* ReplayStories.swift */,
+				A20000010000000000000017 /* ReplayView.swift */,
+				A20000010000000000000005 /* Views.swift */,
+			);
+			path = BitChordMac;
+			sourceTree = "<group>";
+		};
+		A40000010000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000000 /* Lilt.app */,
+				A20000010000000000000007 /* BitChordTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A40000010000000000000004 /* BitChordTests */ = {
+			isa = PBXGroup;
+			children = (
+				F6D100000000000000000005 /* MusicLinkTests.swift */,
+				A20000010000000000000008 /* PlaybackControllerTests.swift */,
+				A20000010000000000000011 /* DownloadManagerTests.swift */,
+				A20000010000000000000012 /* YouTubeMusicWriteTests.swift */,
+				A20000010000000000000015 /* SourceModuleTests.swift */,
+				A20000010000000000000018 /* ListeningStatsTests.swift */,
+				A2000001000000000000001A /* BackupManagerTests.swift */,
+				A2000001000000000000001C /* ScrobblingTests.swift */,
+				A2000001000000000000001E /* LyricsTests.swift */,
+				A20000010000000000000020 /* ArtworkThemeTests.swift */,
+				E1B100000000000000000005 /* EmbeddedLyricsTests.swift */,
+				E1B10000000000000000000A /* LocalLibraryTests.swift */,
+				E1B10000000000000000000F /* CanvasTests.swift */,
+				E1B100000000000000000014 /* EqualizerTests.swift */,
+				E1B100000000000000000019 /* AutomixTests.swift */,
+				F2C100000000000000000005 /* ReplayStoriesTests.swift */,
+				F3D100000000000000000005 /* ArtistFactsTests.swift */,
+				F5D100000000000000000005 /* AudioStreamCacheTests.swift */,
+			);
+			path = BitChordTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A50000010000000000000001 /* Lilt */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A60000010000000000000002 /* Build configuration list for PBXNativeTarget "Lilt" */;
+			buildPhases = (
+				A30000010000000000000002 /* Sources */,
+				A30000010000000000000003 /* Resources */,
+				A30000010000000000000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Lilt;
+			productName = Lilt;
+			productReference = A20000010000000000000000 /* Lilt.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A50000010000000000000002 /* BitChordTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A60000010000000000000003 /* Build configuration list for PBXNativeTarget "BitChordTests" */;
+			buildPhases = (
+				A30000010000000000000005 /* Sources */,
+				A30000010000000000000006 /* Resources */,
+				A30000010000000000000004 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BitChordTests;
+			productName = BitChordTests;
+			productReference = A20000010000000000000007 /* BitChordTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A70000010000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1700;
+				LastUpgradeCheck = 1700;
+				TargetAttributes = {
+					A50000010000000000000002 = {
+						TestTargetID = A50000010000000000000001;
+					};
+				};
+			};
+			buildConfigurationList = A60000010000000000000001 /* Build configuration list for PBXProject "BitChordMac" */;
+			compatibilityVersion = "Xcode 16.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A40000010000000000000001;
+			productRefGroup = A40000010000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A50000010000000000000001 /* Lilt */,
+				A50000010000000000000002 /* BitChordTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A30000010000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B1C100000000000000000001 /* Resources/BitChord.icns in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A30000010000000000000006 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A30000010000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000010000000000000001 /* BitChordMacApp.swift in Sources */,
+				A10000010000000000000002 /* Models.swift in Sources */,
+				F6D100000000000000000001 /* MusicLink.swift in Sources */,
+				A10000010000000000000003 /* AppModel.swift in Sources */,
+				A10000010000000000000004 /* YouTubeMusicAPI.swift in Sources */,
+				F5D100000000000000000001 /* AudioStreamCache.swift in Sources */,
+				A10000010000000000000011 /* DownloadManager.swift in Sources */,
+				A10000010000000000000015 /* SourceModules.swift in Sources */,
+				F7D100000000000000000001 /* JioSaavn.swift in Sources */,
+				A10000010000000000000020 /* ListeningStats.swift in Sources */,
+				F3D100000000000000000001 /* ArtistFacts.swift in Sources */,
+				A10000010000000000000024 /* BackupManager.swift in Sources */,
+				A10000010000000000000027 /* Scrobbling.swift in Sources */,
+				A10000010000000000000030 /* Lyrics.swift in Sources */,
+				A10000010000000000000033 /* ArtworkTheme.swift in Sources */,
+				E1B100000000000000000001 /* EmbeddedLyrics.swift in Sources */,
+				E1B100000000000000000006 /* LocalLibrary.swift in Sources */,
+				E1B10000000000000000000B /* Canvas.swift in Sources */,
+				F4D100000000000000000001 /* CanvasCache.swift in Sources */,
+				F4D100000000000000000007 /* CanvasHLSResourceLoader.swift in Sources */,
+				F4D100000000000000000004 /* SpotifyCanvas.swift in Sources */,
+				E1B100000000000000000010 /* Equalizer.swift in Sources */,
+				E1B100000000000000000015 /* Automix.swift in Sources */,
+				E1B10000000000000000001A /* AutomixBridge.mm in Sources */,
+				E1B10000000000000000001F /* audio_analysis.cpp in Sources */,
+				E1B100000000000000000022 /* tempo_analysis.cpp in Sources */,
+				E1B100000000000000000025 /* resampler.cpp in Sources */,
+				F2C100000000000000000001 /* ReplayStories.swift in Sources */,
+				A10000010000000000000022 /* ReplayView.swift in Sources */,
+				A10000010000000000000005 /* Views.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A30000010000000000000005 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F6D100000000000000000003 /* MusicLinkTests.swift in Sources */,
+				A10000010000000000000006 /* PlaybackControllerTests.swift in Sources */,
+				A10000010000000000000013 /* DownloadManagerTests.swift in Sources */,
+				A10000010000000000000014 /* YouTubeMusicWriteTests.swift in Sources */,
+				A10000010000000000000019 /* SourceModuleTests.swift in Sources */,
+				A10000010000000000000023 /* ListeningStatsTests.swift in Sources */,
+				A10000010000000000000026 /* BackupManagerTests.swift in Sources */,
+				A10000010000000000000029 /* ScrobblingTests.swift in Sources */,
+				A10000010000000000000032 /* LyricsTests.swift in Sources */,
+				A10000010000000000000035 /* ArtworkThemeTests.swift in Sources */,
+				E1B100000000000000000004 /* EmbeddedLyricsTests.swift in Sources */,
+				E1B100000000000000000009 /* LocalLibraryTests.swift in Sources */,
+				E1B10000000000000000000E /* CanvasTests.swift in Sources */,
+				E1B100000000000000000013 /* EqualizerTests.swift in Sources */,
+				E1B100000000000000000018 /* AutomixTests.swift in Sources */,
+				F2C100000000000000000003 /* ReplayStoriesTests.swift in Sources */,
+				F3D100000000000000000004 /* ArtistFactsTests.swift in Sources */,
+				F5D100000000000000000003 /* AudioStreamCacheTests.swift in Sources */,
+				A10000010000000000000008 /* Models.swift in Sources */,
+				F6D100000000000000000002 /* MusicLink.swift in Sources */,
+				A10000010000000000000009 /* AppModel.swift in Sources */,
+				A10000010000000000000010 /* YouTubeMusicAPI.swift in Sources */,
+				F5D100000000000000000002 /* AudioStreamCache.swift in Sources */,
+				A10000010000000000000012 /* DownloadManager.swift in Sources */,
+				A10000010000000000000016 /* SourceModules.swift in Sources */,
+				F7D100000000000000000002 /* JioSaavn.swift in Sources */,
+				A10000010000000000000021 /* ListeningStats.swift in Sources */,
+				F3D100000000000000000002 /* ArtistFacts.swift in Sources */,
+				A10000010000000000000025 /* BackupManager.swift in Sources */,
+				A10000010000000000000028 /* Scrobbling.swift in Sources */,
+				A10000010000000000000031 /* Lyrics.swift in Sources */,
+				A10000010000000000000034 /* ArtworkTheme.swift in Sources */,
+				E1B100000000000000000002 /* EmbeddedLyrics.swift in Sources */,
+				E1B100000000000000000007 /* LocalLibrary.swift in Sources */,
+				E1B10000000000000000000C /* Canvas.swift in Sources */,
+				F4D100000000000000000002 /* CanvasCache.swift in Sources */,
+				F4D100000000000000000008 /* CanvasHLSResourceLoader.swift in Sources */,
+				F4D100000000000000000005 /* SpotifyCanvas.swift in Sources */,
+				E1B100000000000000000011 /* Equalizer.swift in Sources */,
+				E1B100000000000000000016 /* Automix.swift in Sources */,
+				E1B10000000000000000001B /* AutomixBridge.mm in Sources */,
+				E1B100000000000000000020 /* audio_analysis.cpp in Sources */,
+				E1B100000000000000000023 /* tempo_analysis.cpp in Sources */,
+				E1B100000000000000000026 /* resampler.cpp in Sources */,
+				F2C100000000000000000002 /* ReplayStories.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A80000010000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A80000010000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A80000010000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CODE_SIGNING_ALLOWED = YES;
+				CODE_SIGNING_REQUIRED = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 54K55SFZ83;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BitChordMac/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pogozhev.lilt;
+				PRODUCT_MODULE_NAME = BitChord;
+				PRODUCT_NAME = Lilt;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "BitChordMac/BitChord-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A80000010000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CODE_SIGNING_ALLOWED = YES;
+				CODE_SIGNING_REQUIRED = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 54K55SFZ83;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BitChordMac/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pogozhev.lilt;
+				PRODUCT_MODULE_NAME = BitChord;
+				PRODUCT_NAME = Lilt;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "BitChordMac/BitChord-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A80000010000000000000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bitchord.mac.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = "BitChordMac/BitChord-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A80000010000000000000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGNING_REQUIRED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bitchord.mac.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = "BitChordMac/BitChord-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A60000010000000000000001 /* Build configuration list for PBXProject "BitChordMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000010000000000000001 /* Debug */,
+				A80000010000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A60000010000000000000002 /* Build configuration list for PBXNativeTarget "Lilt" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000010000000000000003 /* Debug */,
+				A80000010000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A60000010000000000000003 /* Build configuration list for PBXNativeTarget "BitChordTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000010000000000000005 /* Debug */,
+				A80000010000000000000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A70000010000000000000001 /* Project object */;
+}
