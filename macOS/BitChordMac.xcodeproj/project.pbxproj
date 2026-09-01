@@ -86,6 +86,9 @@
 		F6D100000000000000000003 /* MusicLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D100000000000000000005 /* MusicLinkTests.swift */; };
 		F7D100000000000000000001 /* JioSaavn.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D100000000000000000003 /* JioSaavn.swift */; };
 		F7D100000000000000000002 /* JioSaavn.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D100000000000000000003 /* JioSaavn.swift */; };
+		D8D100000000000000000001 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8D100000000000000000004 /* UpdateChecker.swift */; };
+		D8D100000000000000000002 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8D100000000000000000004 /* UpdateChecker.swift */; };
+		D8D100000000000000000003 /* UpdateCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8D100000000000000000005 /* UpdateCheckerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -145,6 +148,8 @@
 		F6D100000000000000000005 /* MusicLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicLinkTests.swift; sourceTree = "<group>"; };
 		F6D100000000000000000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F7D100000000000000000003 /* JioSaavn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JioSaavn.swift; sourceTree = "<group>"; };
+		D8D100000000000000000004 /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
+		D8D100000000000000000005 /* UpdateCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -193,6 +198,7 @@
 				F6D100000000000000000006 /* Info.plist */,
 				B1C100000000000000000002 /* Resources/BitChord.icns */,
 				A20000010000000000000001 /* BitChordMacApp.swift */,
+				D8D100000000000000000004 /* UpdateChecker.swift */,
 				A20000010000000000000002 /* Models.swift */,
 				F6D100000000000000000004 /* MusicLink.swift */,
 				A20000010000000000000003 /* AppModel.swift */,
@@ -240,6 +246,7 @@
 		A40000010000000000000004 /* BitChordTests */ = {
 			isa = PBXGroup;
 			children = (
+				D8D100000000000000000005 /* UpdateCheckerTests.swift */,
 				F6D100000000000000000005 /* MusicLinkTests.swift */,
 				A20000010000000000000008 /* PlaybackControllerTests.swift */,
 				A20000010000000000000011 /* DownloadManagerTests.swift */,
@@ -356,6 +363,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000010000000000000001 /* BitChordMacApp.swift in Sources */,
+				D8D100000000000000000001 /* UpdateChecker.swift in Sources */,
 				A10000010000000000000002 /* Models.swift in Sources */,
 				F6D100000000000000000001 /* MusicLink.swift in Sources */,
 				A10000010000000000000003 /* AppModel.swift in Sources */,
@@ -392,6 +400,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D8D100000000000000000003 /* UpdateCheckerTests.swift in Sources */,
+				D8D100000000000000000002 /* UpdateChecker.swift in Sources */,
 				F6D100000000000000000003 /* MusicLinkTests.swift in Sources */,
 				A10000010000000000000006 /* PlaybackControllerTests.swift in Sources */,
 				A10000010000000000000013 /* DownloadManagerTests.swift in Sources */,

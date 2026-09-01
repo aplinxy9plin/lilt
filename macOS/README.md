@@ -77,6 +77,7 @@ An `Apple Development` certificate is suitable for local Xcode builds but cannot
 - Full-screen now-playing view with artwork treatment, source badge, line timing and word/syllable-level lyric highlighting.
 - Animated Now Playing and album-header artwork from Apple Music, TIDAL, the community index and optional Spotify Canvas, with strict title/artist/album validation, regional catalogue fallback, muted native looping and separate controls for metered networks. Spotify uses the listener's own `sp_dc` web session, keeps it only in Keychain and mints the same short-lived access/client tokens as the web player. Progressive clips plus HLS playlists/segments share a 150 MB on-device LRU cache, so a short loop is not downloaded again on every pass.
 - Artwork-driven mini-player and Now Playing palette matching the Kotlin design: dominant cover tint, vibrant controls, bottom-edge wash, bounded palette cache, full-bleed or compact-square cover layouts, Reduce Animation and Android-compatible Reduce Dynamic Blur solid surfaces.
+- Automatic update checks against the latest public GitHub Release run at most once every six hours, with a manual **Lilt → Check for Updates…** command. New versions open the signed and notarized release download page; background failures stay silent while manual failures remain visible.
 
 ## Audio-source modules
 

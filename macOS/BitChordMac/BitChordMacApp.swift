@@ -4,6 +4,7 @@ import SwiftUI
 @main
 struct BitChordMacApp: App {
     @StateObject private var model: AppModel
+    @StateObject private var updateChecker = UpdateChecker()
 
     init() {
         _model = StateObject(wrappedValue: AppModel())
@@ -12,6 +13,9 @@ struct BitChordMacApp: App {
     var body: some Scene {
         WindowGroup("Lilt") {
             BitChordRootView(model: model, player: model.player)
+                .task {
+                    await updateChecker.checkAutomatically()
+                }
                 .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
                     model.player.savePlaybackState()
                 }
@@ -21,6 +25,12 @@ struct BitChordMacApp: App {
         }
         .windowStyle(.hiddenTitleBar)
         .commands {
+            CommandGroup(after: .appInfo) {
+                Button(updateChecker.isChecking ? "Checking for Updates…" : "Check for Updates…") {
+                    Task { await updateChecker.checkManually() }
+                }
+                .disabled(updateChecker.isChecking)
+            }
             CommandGroup(after: .newItem) {
                 Button("Add Music…") { model.importAudio() }
                     .keyboardShortcut("o", modifiers: [.command, .shift])
