@@ -4,7 +4,7 @@
 
 ### A native YouTube Music player for macOS
 
-[**Features**](#features) · [**Build**](#build) · [**Disclaimer**](#disclaimer) · [**License**](#license)
+[**Features**](#features) · [**Build**](#build) · [**Support**](#support) · [**Disclaimer**](#disclaimer) · [**License**](#license)
 
 </div>
 
@@ -54,9 +54,10 @@ macOS/package-personal-release.sh
 ```
 
 The archive is written to `macOS/Distribution/Lilt-personal-universal.zip`.
-The packaging script bundles the playback helpers and uses the best signing
-identity available in Keychain. Distribution without a Gatekeeper warning
-requires a Developer ID certificate and Apple notarization.
+The packaging script bundles the playback helpers, signs all nested code with
+a Developer ID certificate, submits the app to Apple notarization and verifies
+the finished build with Gatekeeper. Run it with the `organizer` argument to
+complete notarization through Xcode Organizer instead.
 
 ## Tests
 
@@ -68,6 +69,10 @@ xcodebuild \
   -derivedDataPath macOS/DerivedData \
   test
 ```
+
+## Support
+
+If you enjoy Lilt, you can [support its development on DonationAlerts](https://www.donationalerts.com/r/aplin).
 
 ## Disclaimer
 

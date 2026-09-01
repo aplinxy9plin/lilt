@@ -30,7 +30,28 @@ Build a universal Apple Silicon + Intel archive with:
 macOS/package-personal-release.sh
 ```
 
-The archive is written to `macOS/Distribution/Lilt-personal-universal.zip` and includes `INSTALL.txt`, official universal `yt-dlp` and Deno helpers. The script signs every executable with the best certificate available in Keychain, preferring `Developer ID Application` over `Apple Development`. It does not notarize the archive, so a Mac that received it over the internet may still require **System Settings → Privacy & Security → Open Anyway** once.
+To let Xcode use the Apple Account already signed in to Organizer instead of configuring `notarytool` credentials, run:
+
+```sh
+macOS/package-personal-release.sh organizer
+```
+
+The script opens a prepared archive containing the bundled playback helpers. In Organizer choose **Distribute App → Developer ID → Upload**; after Apple accepts it, export the notarized app from Organizer.
+
+The archive is written to `macOS/Distribution/Lilt-personal-universal.zip` and includes `INSTALL.txt`, official universal `yt-dlp` and Deno helpers. Release packaging requires an Apple Developer Program membership and a `Developer ID Application` certificate. It signs all nested Mach-O code with the hardened runtime (preserving Deno's required JIT entitlements), submits the app to Apple notarization, staples the ticket and verifies the finished app with Gatekeeper before creating the archive. A downloaded copy can therefore be opened normally on another Mac without **Open Anyway**.
+
+Create a one-time Keychain profile for notarization (use an app-specific password from appleid.apple.com):
+
+```sh
+xcrun notarytool store-credentials "lilt-notary" \
+  --apple-id "YOUR_APPLE_ID" \
+  --team-id "YOUR_TEAM_ID" \
+  --password "YOUR_APP_SPECIFIC_PASSWORD"
+```
+
+Then run the packaging script. It uses the `lilt-notary` profile by default. To use a differently named profile, set `LILT_NOTARY_PROFILE`; App Store Connect API credentials are also supported with `LILT_NOTARY_KEY_PATH`, `LILT_NOTARY_KEY_ID` and `LILT_NOTARY_ISSUER`.
+
+An `Apple Development` certificate is suitable for local Xcode builds but cannot create a warning-free downloadable release. Xcode can create the required certificate from **Settings → Accounts → Manage Certificates → + → Developer ID Application** after the Apple Developer Program membership is active.
 
 ## Included in the native app
 
