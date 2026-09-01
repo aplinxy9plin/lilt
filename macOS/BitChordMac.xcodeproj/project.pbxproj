@@ -87,8 +87,8 @@
 		F7D100000000000000000001 /* JioSaavn.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D100000000000000000003 /* JioSaavn.swift */; };
 		F7D100000000000000000002 /* JioSaavn.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D100000000000000000003 /* JioSaavn.swift */; };
 		D8D100000000000000000001 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8D100000000000000000004 /* UpdateChecker.swift */; };
-		D8D100000000000000000002 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8D100000000000000000004 /* UpdateChecker.swift */; };
 		D8D100000000000000000003 /* UpdateCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8D100000000000000000005 /* UpdateCheckerTests.swift */; };
+		D9D100000000000000000001 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = D9D100000000000000000002 /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -157,6 +157,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D9D100000000000000000001 /* Sparkle in Frameworks */,
 				A10000010000000000000017 /* JavaScriptCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -285,6 +286,9 @@
 			dependencies = (
 			);
 			name = Lilt;
+			packageProductDependencies = (
+				D9D100000000000000000002 /* Sparkle */,
+			);
 			productName = Lilt;
 			productReference = A20000010000000000000000 /* Lilt.app */;
 			productType = "com.apple.product-type.application";
@@ -329,6 +333,9 @@
 				Base,
 			);
 			mainGroup = A40000010000000000000001;
+			packageReferences = (
+				D9D100000000000000000003 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			productRefGroup = A40000010000000000000003 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -401,7 +408,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D8D100000000000000000003 /* UpdateCheckerTests.swift in Sources */,
-				D8D100000000000000000002 /* UpdateChecker.swift in Sources */,
 				F6D100000000000000000003 /* MusicLinkTests.swift in Sources */,
 				A10000010000000000000006 /* PlaybackControllerTests.swift in Sources */,
 				A10000010000000000000013 /* DownloadManagerTests.swift in Sources */,
@@ -494,7 +500,7 @@
 				CODE_SIGNING_REQUIRED = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 54K55SFZ83;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BitChordMac/Info.plist;
@@ -503,7 +509,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pogozhev.lilt;
 				PRODUCT_MODULE_NAME = BitChord;
 				PRODUCT_NAME = Lilt;
@@ -525,7 +531,7 @@
 				CODE_SIGNING_REQUIRED = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 54K55SFZ83;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -535,7 +541,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pogozhev.lilt;
 				PRODUCT_MODULE_NAME = BitChord;
 				PRODUCT_NAME = Lilt;
@@ -613,6 +619,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D9D100000000000000000003 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = exactVersion;
+				version = 2.9.6;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D9D100000000000000000002 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D9D100000000000000000003 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A70000010000000000000001 /* Project object */;
 }

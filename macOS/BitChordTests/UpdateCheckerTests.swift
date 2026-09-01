@@ -1,22 +1,31 @@
 import XCTest
 
 final class UpdateCheckerTests: XCTestCase {
-    func testReleasePrefixAndMissingPatchAreEquivalent() {
-        XCTAssertEqual(ReleaseVersion("v1.2.0"), ReleaseVersion("1.2"))
+    func testSparkleConfigurationIsSecureAndAutomatic() throws {
+        let plist = try loadAppInfoPlist()
+
+        XCTAssertEqual(
+            plist["SUFeedURL"] as? String,
+            "https://github.com/aplinxy9plin/lilt/releases/latest/download/appcast.xml"
+        )
+        XCTAssertEqual(plist["SUEnableAutomaticChecks"] as? Bool, true)
+        XCTAssertEqual(plist["SUAllowsAutomaticUpdates"] as? Bool, true)
+        XCTAssertEqual(plist["SUAutomaticallyUpdate"] as? Bool, true)
+        XCTAssertEqual(plist["SUVerifyUpdateBeforeExtraction"] as? Bool, true)
+        XCTAssertEqual(plist["SURequireSignedFeed"] as? Bool, true)
+
+        let publicKey = try XCTUnwrap(plist["SUPublicEDKey"] as? String)
+        XCTAssertEqual(Data(base64Encoded: publicKey)?.count, 32)
     }
 
-    func testNumericComponentsUseSemanticOrdering() {
-        XCTAssertLessThan(ReleaseVersion("1.9.0")!, ReleaseVersion("1.10.0")!)
-        XCTAssertLessThan(ReleaseVersion("0.1.0")!, ReleaseVersion("0.2.0")!)
-    }
-
-    func testStableReleaseWinsOverPrerelease() {
-        XCTAssertLessThan(ReleaseVersion("2.0.0-beta.2")!, ReleaseVersion("2.0.0")!)
-        XCTAssertLessThan(ReleaseVersion("2.0.0-beta.2")!, ReleaseVersion("2.0.0-beta.10")!)
-    }
-
-    func testMalformedTagsAreRejected() {
-        XCTAssertNil(ReleaseVersion("latest"))
-        XCTAssertNil(ReleaseVersion("v1..2"))
+    private func loadAppInfoPlist() throws -> [String: Any] {
+        let testsDirectory = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+        let plistURL = testsDirectory
+            .deletingLastPathComponent()
+            .appendingPathComponent("BitChordMac/Info.plist")
+        let data = try Data(contentsOf: plistURL)
+        return try XCTUnwrap(
+            PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any]
+        )
     }
 }

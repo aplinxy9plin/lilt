@@ -28,7 +28,7 @@
 | --- | --- |
 | **Playback & library** | YouTube Music sign-in with personalized Home, Explore, Search and Library.<br>Persistent queue, media keys and macOS Now Playing integration.<br>Gapless handoff, crossfade, shuffle, repeat and optional AutoPlay radio.<br>Offline downloads, cached audio, local files and indexed folders.<br>Per-network quality profiles and optional alternative audio sources. |
 | **Audio & controls** | Ten-band equalizer, preamp and Spatial Audio processing.<br>Optional Automix with beat analysis and tempo-matched transitions.<br>Playback speed, skip silence, sleep timer and full-width volume control.<br>Stats for Nerds with codec, bitrate and sample-rate details. |
-| **Experience** | Native SwiftUI interface with system, light and dark appearances.<br>Artwork-driven player colors and animated Canvas artwork.<br>Full-screen Now Playing with line- and word-synced lyrics.<br>Private on-device Replay statistics, charts and stories.<br>Automatic GitHub Releases update checks plus a manual app-menu action.<br>Universal Apple Silicon and Intel builds. |
+| **Experience** | Native SwiftUI interface with system, light and dark appearances.<br>Artwork-driven player colors and animated Canvas artwork.<br>Full-screen Now Playing with line- and word-synced lyrics.<br>Private on-device Replay statistics, charts and stories.<br>Signed automatic updates powered by Sparkle 2, plus a manual app-menu action.<br>Universal Apple Silicon and Intel builds. |
 | **Accounts & privacy** | Optional Last.fm and ListenBrainz scrobbling.<br>Credentials and sessions stored in macOS Keychain.<br>Listening statistics kept locally on the Mac.<br>Portable JSON backup for settings, Replay and search history.<br>No Discord integration or Rich Presence. |
 
 See [the macOS documentation](macOS/README.md) for the complete feature list.
@@ -58,11 +58,12 @@ To create a universal personal archive for another Mac:
 macOS/package-personal-release.sh
 ```
 
-The archive is written to `macOS/Distribution/Lilt-personal-universal.zip`.
-The packaging script bundles the playback helpers, signs all nested code with
-a Developer ID certificate, submits the app to Apple notarization and verifies
-the finished build with Gatekeeper. Run it with the `organizer` argument to
-complete notarization through Xcode Organizer instead.
+The script creates the personal archive plus a versioned Sparkle ZIP and signed
+`appcast.xml` in `macOS/Distribution/`. It bundles the playback helpers, signs
+all nested code with a Developer ID certificate, submits the app to Apple
+notarization and verifies the finished build with Gatekeeper. Version 0.2.0 is
+the one-time manual transition release; later releases can be downloaded,
+verified and installed automatically by Sparkle.
 
 ## Tests
 

@@ -6,6 +6,7 @@ Thumbs.db
 # Xcode build and user state
 macOS/DerivedData*/
 macOS/Distribution/*.zip
+macOS/Distribution/appcast.xml
 **/xcuserdata/
 *.xcuserstate
 *.xcresult

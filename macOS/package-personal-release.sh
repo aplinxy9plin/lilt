@@ -15,6 +15,7 @@ app_path="$derived_data/Build/Products/Release/Lilt.app"
 helper_cache="$derived_data/HelperCache"
 distribution_dir="$script_dir/Distribution"
 archive_path="$distribution_dir/Lilt-personal-universal.zip"
+appcast_path="$distribution_dir/appcast.xml"
 install_guide="$distribution_dir/INSTALL.txt"
 deno_entitlements="$script_dir/Signing/Deno.entitlements"
 notary_profile="${LILT_NOTARY_PROFILE:-lilt-notary}"
@@ -22,6 +23,7 @@ temporary_root=$(/usr/bin/mktemp -d "${TMPDIR:-/tmp}/lilt-release.XXXXXX")
 staging_dir="$temporary_root/Lilt personal release"
 temporary_archive="$temporary_root/Lilt-personal-universal.zip"
 notary_archive="$temporary_root/Lilt-notary-submission.zip"
+sparkle_updates_dir="$temporary_root/sparkle-updates"
 yt_dlp_archive="$helper_cache/yt-dlp_macos-2026.08.19.zip"
 deno_arm_archive="$helper_cache/deno-aarch64-2.9.6.zip"
 deno_intel_archive="$helper_cache/deno-x86_64-2.9.6.zip"
@@ -62,6 +64,58 @@ resolve_signing_identity() {
   print -r -- "$identity"
 }
 
+resolve_sparkle_bin() {
+  local candidate
+  local -a candidates
+  candidates=(
+    "${SPARKLE_BIN:-}"
+    "$derived_data/SourcePackages/artifacts/sparkle/Sparkle/bin"
+  )
+
+  for candidate in "${candidates[@]}"; do
+    if [[ -n "$candidate" && -x "$candidate/generate_appcast" && -x "$candidate/generate_keys" && -x "$candidate/sign_update" ]]; then
+      print -r -- "$candidate"
+      return
+    fi
+  done
+
+  print -u2 "Sparkle tools were not found. Resolve the Sparkle SPM package or set SPARKLE_BIN to its bin directory."
+  exit 1
+}
+
+verify_sparkle_key() {
+  local configured_public_key
+  local keychain_public_key
+
+  configured_public_key=$(/usr/bin/plutil -extract SUPublicEDKey raw -o - "$script_dir/BitChordMac/Info.plist")
+  if ! keychain_public_key=$("$sparkle_bin/generate_keys" -p 2>/dev/null); then
+    print -u2 "Sparkle EdDSA private key was not found in the login Keychain."
+    print -u2 "Run: $sparkle_bin/generate_keys"
+    exit 1
+  fi
+  if [[ "$keychain_public_key" != "$configured_public_key" ]]; then
+    print -u2 "The Sparkle key in the login Keychain does not match SUPublicEDKey in Info.plist."
+    exit 1
+  fi
+}
+
+verify_notary_authentication() {
+  if [[ -n "${LILT_NOTARY_KEY_PATH:-}" || -n "${LILT_NOTARY_KEY_ID:-}" || -n "${LILT_NOTARY_ISSUER:-}" ]]; then
+    if [[ -z "${LILT_NOTARY_KEY_PATH:-}" || -z "${LILT_NOTARY_KEY_ID:-}" || -z "${LILT_NOTARY_ISSUER:-}" ]]; then
+      print -u2 "Set LILT_NOTARY_KEY_PATH, LILT_NOTARY_KEY_ID and LILT_NOTARY_ISSUER together."
+      exit 1
+    fi
+    if [[ ! -f "$LILT_NOTARY_KEY_PATH" ]]; then
+      print -u2 "Notary API key file not found: $LILT_NOTARY_KEY_PATH"
+      exit 1
+    fi
+  elif ! /usr/bin/xcrun notarytool history --keychain-profile "$notary_profile" >/dev/null 2>&1; then
+    print -u2 "Notarytool profile '$notary_profile' was not found or could not authenticate."
+    print -u2 "Configure it with: xcrun notarytool store-credentials '$notary_profile'"
+    exit 1
+  fi
+}
+
 sign_code() {
   local path=$1
   /usr/bin/codesign --force --options runtime --timestamp --sign "$signing_identity" "$path"
@@ -95,6 +149,19 @@ sign_nested_mach_o() {
   while IFS= read -r -d '' path; do
     sign_code "$path"
   done < <(/usr/bin/find "$root" -type d -name '*.framework' -print0)
+}
+
+sign_embedded_bundles() {
+  local root=$1
+  local path
+  while IFS= read -r path; do
+    sign_code "$path"
+  done < <(
+    /usr/bin/find "$root" -type d \( -name '*.xpc' -o -name '*.app' -o -name '*.framework' \) -print |
+      /usr/bin/awk '{ print length($0), $0 }' |
+      /usr/bin/sort -rn |
+      /usr/bin/cut -d ' ' -f 2-
+  )
 }
 
 normalize_python_framework() {
@@ -201,6 +268,7 @@ trap cleanup EXIT
 /bin/mkdir -p "$distribution_dir"
 /bin/mkdir -p "$helper_cache"
 /bin/mkdir -p "$staging_dir"
+/bin/mkdir -p "$sparkle_updates_dir"
 
 signing_identity=$(resolve_signing_identity)
 if [[ -z "$signing_identity" ]]; then
@@ -212,6 +280,17 @@ if [[ "$signing_identity" != Developer\ ID\ Application:* ]]; then
   print -u2 "Found instead: $signing_identity"
   exit 1
 fi
+
+/usr/bin/xcodebuild \
+  -resolvePackageDependencies \
+  -project "$project_path" \
+  -scheme Lilt \
+  -derivedDataPath "$derived_data"
+sparkle_bin=$(resolve_sparkle_bin)
+if [[ "$mode" == notarize ]]; then
+  verify_notary_authentication
+fi
+verify_sparkle_key
 
 fetch_verified \
   "https://github.com/yt-dlp/yt-dlp/releases/download/2026.08.19/yt-dlp_macos.zip" \
@@ -259,6 +338,7 @@ normalize_python_framework "$helpers_dir/yt-dlp/_internal/Python.framework"
 
 sign_nested_mach_o "$helpers_dir"
 sign_deno "$helpers_dir/deno"
+sign_embedded_bundles "$packaged_app/Contents/Frameworks"
 sign_app "$packaged_app"
 /usr/bin/codesign --verify --deep --strict --verbose=2 "$packaged_app"
 /usr/bin/codesign --verify --strict --verbose=2 "$helpers_dir/yt-dlp/yt-dlp"
@@ -287,11 +367,45 @@ fi
 
 notarize_app "$packaged_app"
 
+version=$(/usr/bin/defaults read "$packaged_app/Contents/Info" CFBundleShortVersionString)
+build=$(/usr/bin/defaults read "$packaged_app/Contents/Info" CFBundleVersion)
+release_tag="${LILT_RELEASE_TAG:-v$version}"
+sparkle_archive="$distribution_dir/Lilt-macOS-$version-universal.zip"
+temporary_sparkle_archive="$temporary_root/${sparkle_archive:t}"
+temporary_appcast="$temporary_root/appcast.xml"
+download_url_prefix="https://github.com/aplinxy9plin/lilt/releases/download/$release_tag/"
+
+/usr/bin/ditto -c -k --keepParent "$packaged_app" "$temporary_sparkle_archive"
+/bin/cp "$temporary_sparkle_archive" "$sparkle_updates_dir/${sparkle_archive:t}"
+"$sparkle_bin/generate_appcast" \
+  --account ed25519 \
+  --download-url-prefix "$download_url_prefix" \
+  --versions "$build" \
+  --maximum-deltas 0 \
+  -o "$temporary_appcast" \
+  "$sparkle_updates_dir"
+"$sparkle_bin/sign_update" --account ed25519 --verify "$temporary_appcast"
+
+sparkle_signature=$(/usr/bin/xmllint --xpath \
+  'string(//*[local-name()="enclosure"]/@*[local-name()="edSignature"])' \
+  "$temporary_appcast")
+if [[ -z "$sparkle_signature" ]]; then
+  print -u2 "generate_appcast did not add an EdDSA signature to the update enclosure."
+  exit 1
+fi
+"$sparkle_bin/sign_update" --account ed25519 --verify "$temporary_sparkle_archive" "$sparkle_signature"
+
+/bin/mv -f "$temporary_sparkle_archive" "$sparkle_archive"
+/bin/mv -f "$temporary_appcast" "$appcast_path"
+
 /bin/cp "$install_guide" "$staging_dir/INSTALL.txt"
 /usr/bin/ditto -c -k --sequesterRsrc "$staging_dir" "$temporary_archive"
 /bin/mv -f "$temporary_archive" "$archive_path"
 
 print "Created: $archive_path"
+print "Sparkle ZIP: $sparkle_archive"
+print "Sparkle appcast: $appcast_path"
+print "Sparkle enclosure URL: $download_url_prefix${sparkle_archive:t}"
 print "Architectures: $architectures"
 print "Playback helpers: bundled yt-dlp 2026.08.19 + Deno 2.9.6"
 print "Signing identity: $signing_identity"

@@ -36,9 +36,9 @@ To let Xcode use the Apple Account already signed in to Organizer instead of con
 macOS/package-personal-release.sh organizer
 ```
 
-The script opens a prepared archive containing the bundled playback helpers. In Organizer choose **Distribute App → Developer ID → Upload**; after Apple accepts it, export the notarized app from Organizer.
+The script opens a prepared archive containing the bundled playback helpers. In Organizer choose **Distribute App → Direct Distribution → Distribute**; after Apple reports **Ready to distribute**, choose **Export App…** to save the notarized application.
 
-The archive is written to `macOS/Distribution/Lilt-personal-universal.zip` and includes `INSTALL.txt`, official universal `yt-dlp` and Deno helpers. Release packaging requires an Apple Developer Program membership and a `Developer ID Application` certificate. It signs all nested Mach-O code with the hardened runtime (preserving Deno's required JIT entitlements), submits the app to Apple notarization, staples the ticket and verifies the finished app with Gatekeeper before creating the archive. A downloaded copy can therefore be opened normally on another Mac without **Open Anyway**.
+The personal archive is written to `macOS/Distribution/Lilt-personal-universal.zip` and includes `INSTALL.txt`, official universal `yt-dlp` and Deno helpers. The same run creates `Lilt-macOS-<version>-universal.zip`, containing only `Lilt.app`, and a signed `appcast.xml` for Sparkle. Release packaging requires an Apple Developer Program membership and a `Developer ID Application` certificate. It signs all nested Mach-O code with the hardened runtime (preserving Deno's required JIT entitlements), submits the app to Apple notarization, staples the ticket and verifies the finished app with Gatekeeper before creating any distribution archives. A downloaded copy can therefore be opened normally on another Mac without **Open Anyway**.
 
 Create a one-time Keychain profile for notarization (use an app-specific password from appleid.apple.com):
 
@@ -52,6 +52,20 @@ xcrun notarytool store-credentials "lilt-notary" \
 Then run the packaging script. It uses the `lilt-notary` profile by default. To use a differently named profile, set `LILT_NOTARY_PROFILE`; App Store Connect API credentials are also supported with `LILT_NOTARY_KEY_PATH`, `LILT_NOTARY_KEY_ID` and `LILT_NOTARY_ISSUER`.
 
 An `Apple Development` certificate is suitable for local Xcode builds but cannot create a warning-free downloadable release. Xcode can create the required certificate from **Settings → Accounts → Manage Certificates → + → Developer ID Application** after the Apple Developer Program membership is active.
+
+### Sparkle release signing
+
+Sparkle 2.9.6 is pinned through Swift Package Manager. Its EdDSA private key lives only in the login Keychain under the default `ed25519` account; only the public key belongs in `Info.plist`. Make an encrypted backup outside the repository before publishing. Use Sparkle's `generate_keys -x /secure/outside-repo/lilt-sparkle-private-key` command, encrypt that exported file immediately, verify the encrypted backup, and securely remove the plaintext export. Never commit either form to this repository.
+
+Version 0.2.0 is the manual transition release because 0.1.0 does not contain Sparkle. Starting with 0.2.0, Sparkle checks the signed GitHub appcast, downloads the notarized update, verifies its EdDSA signature before extraction, and can install it automatically when Lilt exits or restarts. **Lilt → Check for Updates…** opens Sparkle's standard update interface.
+
+For each release, tag it as `v<version>`, run `macOS/package-personal-release.sh`, create the matching GitHub Release, and upload these generated assets without renaming them:
+
+- `macOS/Distribution/Lilt-macOS-<version>-universal.zip`
+- `macOS/Distribution/appcast.xml`
+- `macOS/Distribution/Lilt-personal-universal.zip` (optional manual-install bundle)
+
+The generated enclosure URL targets the versioned ZIP on that exact GitHub tag. Upload both the ZIP and `appcast.xml` before publishing the release. Do not publish while code-signing, notarization, Gatekeeper, archive-signature, or signed-appcast verification is failing.
 
 ## Included in the native app
 
@@ -77,7 +91,7 @@ An `Apple Development` certificate is suitable for local Xcode builds but cannot
 - Full-screen now-playing view with artwork treatment, source badge, line timing and word/syllable-level lyric highlighting.
 - Animated Now Playing and album-header artwork from Apple Music, TIDAL, the community index and optional Spotify Canvas, with strict title/artist/album validation, regional catalogue fallback, muted native looping and separate controls for metered networks. Spotify uses the listener's own `sp_dc` web session, keeps it only in Keychain and mints the same short-lived access/client tokens as the web player. Progressive clips plus HLS playlists/segments share a 150 MB on-device LRU cache, so a short loop is not downloaded again on every pass.
 - Artwork-driven mini-player and Now Playing palette matching the Kotlin design: dominant cover tint, vibrant controls, bottom-edge wash, bounded palette cache, full-bleed or compact-square cover layouts, Reduce Animation and Android-compatible Reduce Dynamic Blur solid surfaces.
-- Automatic update checks against the latest public GitHub Release run at most once every six hours, with a manual **Lilt → Check for Updates…** command. New versions open the signed and notarized release download page; background failures stay silent while manual failures remain visible.
+- Sparkle 2 checks the signed GitHub appcast automatically and provides **Lilt → Check for Updates…** using its standard interface. It downloads the notarized universal ZIP, verifies the EdDSA archive and signed feed before extraction, replaces the installed app and relaunches it; automatic updates can be installed when Lilt exits or restarts.
 
 ## Audio-source modules
 

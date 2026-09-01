@@ -3,19 +3,17 @@ import SwiftUI
 
 @main
 struct BitChordMacApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var model: AppModel
-    @StateObject private var updateChecker = UpdateChecker()
+    private let updateChecker = UpdateChecker()
 
     init() {
         _model = StateObject(wrappedValue: AppModel())
     }
 
     var body: some Scene {
-        WindowGroup("Lilt") {
+        Window("Lilt", id: "main") {
             BitChordRootView(model: model, player: model.player)
-                .task {
-                    await updateChecker.checkAutomatically()
-                }
                 .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
                     model.player.savePlaybackState()
                 }
@@ -26,12 +24,11 @@ struct BitChordMacApp: App {
         .windowStyle(.hiddenTitleBar)
         .commands {
             CommandGroup(after: .appInfo) {
-                Button(updateChecker.isChecking ? "Checking for Updates…" : "Check for Updates…") {
-                    Task { await updateChecker.checkManually() }
+                Button("Check for Updates…") {
+                    updateChecker.checkForUpdates()
                 }
-                .disabled(updateChecker.isChecking)
             }
-            CommandGroup(after: .newItem) {
+            CommandGroup(replacing: .newItem) {
                 Button("Add Music…") { model.importAudio() }
                     .keyboardShortcut("o", modifiers: [.command, .shift])
                 Button("Add Music Folder…") { model.addLocalFolder() }
@@ -39,15 +36,31 @@ struct BitChordMacApp: App {
                 Button("Open YouTube Music Link…") { model.showOpenLink = true }
                     .keyboardShortcut("l", modifiers: [.command])
             }
-            CommandGroup(after: .textEditing) {
-                Button("Search Lilt") { model.section = .search }
-                    .keyboardShortcut("f", modifiers: [.command])
-            }
+            CommandGroup(replacing: .undoRedo) { }
+            CommandGroup(replacing: .pasteboard) { }
+            CommandGroup(replacing: .textEditing) { }
+            CommandGroup(replacing: .textFormatting) { }
             CommandGroup(replacing: .help) {
-                Button("Lilt Help") {
-                    NSWorkspace.shared.open(URL(string: "https://music.youtube.com")!)
+                Button("Lilt on GitHub") {
+                    NSWorkspace.shared.open(URL(string: "https://github.com/aplinxy9plin/lilt")!)
                 }
             }
+        }
+    }
+}
+
+private final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidBecomeActive(_ notification: Notification) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            Self.removeUnusedMenuItems()
+        }
+    }
+
+    private static func removeUnusedMenuItems() {
+        guard let mainMenu = NSApp.mainMenu else { return }
+
+        if let formatItem = mainMenu.items.first(where: { $0.title == "Format" }) {
+            mainMenu.removeItem(formatItem)
         }
     }
 }
