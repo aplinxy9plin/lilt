@@ -4453,7 +4453,7 @@ final class AppModel: ObservableObject {
             do {
                 try await api.rate(videoID: videoID, status: status)
                 ratingInFlight.remove(videoID)
-                if status != .like { removeFromLikedCollection(videoID: videoID) }
+                syncLikedCollection(track, status: status)
             } catch {
                 likeStatuses[videoID] = previous
                 ratingInFlight.remove(videoID)
@@ -4684,9 +4684,22 @@ final class AppModel: ObservableObject {
         }
     }
 
-    private func removeFromLikedCollection(videoID: String) {
+    private func syncLikedCollection(_ track: Track, status: LikeStatus) {
         guard selectedBrowseItem?.id == "LM" || selectedBrowseItem?.id == "VLLM" else { return }
-        browseTracks.removeAll { $0.videoID == videoID }
+        browseTracks = Self.likedCollectionTracks(browseTracks, applying: status, to: track)
+    }
+
+    nonisolated static func likedCollectionTracks(
+        _ tracks: [Track],
+        applying status: LikeStatus,
+        to track: Track
+    ) -> [Track] {
+        guard let videoID = track.videoID else { return tracks }
+        if status == .like {
+            guard !tracks.contains(where: { $0.videoID == videoID }) else { return tracks }
+            return [track] + tracks
+        }
+        return tracks.filter { $0.videoID != videoID }
     }
 
     private func replaceLibraryPlaylist(browseID: String, title: String) {

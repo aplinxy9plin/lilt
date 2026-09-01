@@ -31,6 +31,67 @@ final class YouTubeMusicWriteTests: XCTestCase {
         XCTAssertNotNil(payload["context"])
     }
 
+    func testSuccessfulLikeProjectsTrackIntoLikedMusicWithoutDuplicates() {
+        let existing = Track(
+            videoID: "existing-video",
+            title: "Existing",
+            artist: "Artist",
+            album: nil,
+            artworkURL: nil,
+            duration: nil,
+            localPath: nil,
+            sourceURL: nil
+        )
+        let liked = Track(
+            videoID: "liked-video",
+            title: "Liked",
+            artist: "Artist",
+            album: nil,
+            artworkURL: nil,
+            duration: nil,
+            localPath: nil,
+            sourceURL: nil
+        )
+
+        let inserted = AppModel.likedCollectionTracks([existing], applying: .like, to: liked)
+        let repeated = AppModel.likedCollectionTracks(inserted, applying: .like, to: liked)
+
+        XCTAssertEqual(inserted.map(\.videoID), ["liked-video", "existing-video"])
+        XCTAssertEqual(repeated.map(\.videoID), ["liked-video", "existing-video"])
+    }
+
+    func testUnlikeAndDislikeRemoveTrackFromLikedMusic() {
+        let liked = Track(
+            videoID: "liked-video",
+            title: "Liked",
+            artist: "Artist",
+            album: nil,
+            artworkURL: nil,
+            duration: nil,
+            localPath: nil,
+            sourceURL: nil
+        )
+        let other = Track(
+            videoID: "other-video",
+            title: "Other",
+            artist: "Artist",
+            album: nil,
+            artworkURL: nil,
+            duration: nil,
+            localPath: nil,
+            sourceURL: nil
+        )
+
+        XCTAssertEqual(
+            AppModel.likedCollectionTracks([liked, other], applying: .indifferent, to: liked).map(\.videoID),
+            ["other-video"]
+        )
+        XCTAssertEqual(
+            AppModel.likedCollectionTracks([liked, other], applying: .dislike, to: liked).map(\.videoID),
+            ["other-video"]
+        )
+    }
+
     func testPlaylistAddSendsRawPlaylistIDAndReturnsSetVideoID() async throws {
         var capturedRequest: URLRequest?
         var capturedBody: Data?
