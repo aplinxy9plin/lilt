@@ -1,25 +1,71 @@
+<div align="center">
+
 # Lilt
 
-Lilt is a native SwiftUI music player for macOS built around a personal
-YouTube Music account. It keeps the library, playback and discovery behavior
-of the Android BitChord app while using a Mac-native interface and media
-pipeline.
+### A native YouTube Music player for macOS
 
-The app is intended for personal use. It is not affiliated with or endorsed by
-YouTube or Google.
+[**Features**](#features) · [**Build**](#build) · [**Disclaimer**](#disclaimer) · [**License**](#license)
 
-## Highlights
+</div>
 
-- YouTube Music sign-in, personalized Home, Explore, Search and Library.
-- Native queue, media keys, Now Playing, gapless playback and crossfade.
-- Local files, indexed folders and offline downloads.
-- Replay listening statistics, synced lyrics and optional scrobbling.
-- Universal Apple Silicon and Intel release builds.
-- Bundled `yt-dlp` and Deno playback helpers for portable builds.
+> [!WARNING]
+> Lilt is an independent, unofficial third-party client. It is not affiliated with, endorsed by, sponsored by, or connected to Google LLC, YouTube, or YouTube Music in any way. Use it at your own discretion.
+
+<div align="center">
+
+<img src="docs/lilt-home.jpeg" alt="Lilt running on macOS" width="100%" />
+
+</div>
+
+## Features
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>Playback &amp; library</h3>
+      <ul>
+        <li>YouTube Music sign-in with personalized Home, Explore, Search and Library.</li>
+        <li>Direct playback with a persistent queue, media keys and macOS Now Playing integration.</li>
+        <li>Gapless handoff, crossfade, shuffle, repeat and optional AutoPlay radio.</li>
+        <li>Offline downloads and automatic reuse of cached audio.</li>
+        <li>Local files and recursively indexed music folders.</li>
+        <li>Per-network quality profiles and optional alternative audio sources.</li>
+      </ul>
+
+      <h3>Audio &amp; controls</h3>
+      <ul>
+        <li>Ten-band equalizer, preamp and Spatial Audio processing.</li>
+        <li>Optional Automix with beat analysis and tempo-matched transitions.</li>
+        <li>Playback speed, skip silence, sleep timer and full-width volume control.</li>
+        <li>Stats for Nerds with measured codec, bitrate and sample-rate details.</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>Experience</h3>
+      <ul>
+        <li>Native SwiftUI interface designed for macOS.</li>
+        <li>System, light and dark appearances with artwork-driven player colors.</li>
+        <li>Full-screen Now Playing with line- and word-synced lyrics.</li>
+        <li>Animated artwork from supported Canvas providers.</li>
+        <li>Private on-device Replay statistics, charts and stories.</li>
+        <li>Universal Apple Silicon and Intel builds.</li>
+      </ul>
+
+      <h3>Accounts &amp; privacy</h3>
+      <ul>
+        <li>Optional Last.fm and ListenBrainz scrobbling.</li>
+        <li>Credentials and sessions stored in macOS Keychain.</li>
+        <li>Listening statistics kept locally on the Mac.</li>
+        <li>Portable JSON backup for settings, Replay and search history.</li>
+        <li>No Discord integration or Rich Presence.</li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
 See [the macOS documentation](macOS/README.md) for the complete feature list.
 
-## Run in Xcode
+## Build
 
 Requirements:
 
@@ -27,7 +73,7 @@ Requirements:
 - Xcode 16 or newer
 
 Open [`macOS/BitChordMac.xcodeproj`](macOS/BitChordMac.xcodeproj) and run the
-**Lilt** scheme, or use:
+**Lilt** scheme, or build from Terminal:
 
 ```sh
 xcodebuild \
@@ -37,6 +83,17 @@ xcodebuild \
   -derivedDataPath macOS/DerivedData \
   build
 ```
+
+To create a universal personal archive for another Mac:
+
+```sh
+macOS/package-personal-release.sh
+```
+
+The archive is written to `macOS/Distribution/Lilt-personal-universal.zip`.
+The packaging script bundles the playback helpers and uses the best signing
+identity available in Keychain. Distribution without a Gatekeeper warning
+requires a Developer ID certificate and Apple notarization.
 
 ## Tests
 
@@ -49,24 +106,23 @@ xcodebuild \
   test
 ```
 
-## Personal universal build
+## Disclaimer
 
-```sh
-macOS/package-personal-release.sh
-```
+Lilt is an independent client intended for personal and educational use. It
+does not host, upload or distribute music. Media is played from local files or
+retrieved from third-party services requested by the user. Availability may
+change when those services update their APIs, authentication or playback
+requirements. Users are responsible for complying with applicable laws and
+the terms of the services they access.
 
-The script creates `macOS/Distribution/Lilt-personal-universal.zip`. Release
-archives are ignored by Git and are not stored in this repository.
-
-The script uses the best signing identity available in Keychain, preferring a
-`Developer ID Application` certificate. Distribution without a Gatekeeper
-warning additionally requires Apple notarization.
+YouTube, YouTube Music and Google are trademarks of Google LLC. Their names
+are used only to describe interoperability; no affiliation or endorsement is
+implied.
 
 ## Repository layout
 
-- `macOS/` — the native SwiftUI macOS application and tests.
-- `native/analyzer/` — the C++ audio analysis and resampling code used by
-  Automix.
+- `macOS/` — native SwiftUI application, packaging scripts and tests.
+- `native/analyzer/` — C++ audio analysis and resampling used by Automix.
 
 Lilt began as a macOS port of
 [BitChord by Kushagra Singh](https://github.com/kushagrasinghx/BitChord).
