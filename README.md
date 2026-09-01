@@ -1,8 +1,13 @@
 <div align="center">
 
+<img src="macOS/BitChordMac/Resources/AppIconSource.svg" alt="Lilt logo" width="128" height="128" />
+
 # Lilt
 
 ### A native YouTube Music player for macOS
+
+<a href="https://github.com/aplinxy9plin/lilt/releases/latest"><img src="https://img.shields.io/github/v/release/aplinxy9plin/lilt?style=for-the-badge&amp;label=release&amp;labelColor=10151B&amp;color=0A8FD8" alt="Latest release" /></a>
+<a href="LICENSE"><img src="https://img.shields.io/github/license/aplinxy9plin/lilt?style=for-the-badge&amp;label=license&amp;labelColor=10151B&amp;color=EF6C35" alt="GPL-3.0 license" /></a>
 
 [**Features**](#features) · [**Build**](#build) · [**Support**](#support) · [**Disclaimer**](#disclaimer) · [**License**](#license)
 
