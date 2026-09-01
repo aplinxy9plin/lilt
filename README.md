@@ -19,49 +19,12 @@
 
 ## Features
 
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <h3>Playback &amp; library</h3>
-      <ul>
-        <li>YouTube Music sign-in with personalized Home, Explore, Search and Library.</li>
-        <li>Direct playback with a persistent queue, media keys and macOS Now Playing integration.</li>
-        <li>Gapless handoff, crossfade, shuffle, repeat and optional AutoPlay radio.</li>
-        <li>Offline downloads and automatic reuse of cached audio.</li>
-        <li>Local files and recursively indexed music folders.</li>
-        <li>Per-network quality profiles and optional alternative audio sources.</li>
-      </ul>
-
-      <h3>Audio &amp; controls</h3>
-      <ul>
-        <li>Ten-band equalizer, preamp and Spatial Audio processing.</li>
-        <li>Optional Automix with beat analysis and tempo-matched transitions.</li>
-        <li>Playback speed, skip silence, sleep timer and full-width volume control.</li>
-        <li>Stats for Nerds with measured codec, bitrate and sample-rate details.</li>
-      </ul>
-    </td>
-    <td width="50%" valign="top">
-      <h3>Experience</h3>
-      <ul>
-        <li>Native SwiftUI interface designed for macOS.</li>
-        <li>System, light and dark appearances with artwork-driven player colors.</li>
-        <li>Full-screen Now Playing with line- and word-synced lyrics.</li>
-        <li>Animated artwork from supported Canvas providers.</li>
-        <li>Private on-device Replay statistics, charts and stories.</li>
-        <li>Universal Apple Silicon and Intel builds.</li>
-      </ul>
-
-      <h3>Accounts &amp; privacy</h3>
-      <ul>
-        <li>Optional Last.fm and ListenBrainz scrobbling.</li>
-        <li>Credentials and sessions stored in macOS Keychain.</li>
-        <li>Listening statistics kept locally on the Mac.</li>
-        <li>Portable JSON backup for settings, Replay and search history.</li>
-        <li>No Discord integration or Rich Presence.</li>
-      </ul>
-    </td>
-  </tr>
-</table>
+| Category | Features |
+| --- | --- |
+| **Playback & library** | YouTube Music sign-in with personalized Home, Explore, Search and Library.<br>Persistent queue, media keys and macOS Now Playing integration.<br>Gapless handoff, crossfade, shuffle, repeat and optional AutoPlay radio.<br>Offline downloads, cached audio, local files and indexed folders.<br>Per-network quality profiles and optional alternative audio sources. |
+| **Audio & controls** | Ten-band equalizer, preamp and Spatial Audio processing.<br>Optional Automix with beat analysis and tempo-matched transitions.<br>Playback speed, skip silence, sleep timer and full-width volume control.<br>Stats for Nerds with codec, bitrate and sample-rate details. |
+| **Experience** | Native SwiftUI interface with system, light and dark appearances.<br>Artwork-driven player colors and animated Canvas artwork.<br>Full-screen Now Playing with line- and word-synced lyrics.<br>Private on-device Replay statistics, charts and stories.<br>Universal Apple Silicon and Intel builds. |
+| **Accounts & privacy** | Optional Last.fm and ListenBrainz scrobbling.<br>Credentials and sessions stored in macOS Keychain.<br>Listening statistics kept locally on the Mac.<br>Portable JSON backup for settings, Replay and search history.<br>No Discord integration or Rich Presence. |
 
 See [the macOS documentation](macOS/README.md) for the complete feature list.
 
