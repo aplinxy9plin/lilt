@@ -28,6 +28,7 @@ final class AudioStreamCacheTests: XCTestCase {
 
         let cached = await cache.cachedURL(videoID: "video_1", quality: .high)
         XCTAssertNotNil(cached)
+        XCTAssertTrue(cached?.lastPathComponent.hasPrefix("stream-youtube-v2-") == true)
         XCTAssertEqual(try cached.map { try Data(contentsOf: $0) }, RangeCacheURLProtocol.payload)
         let snapshot = await cache.snapshot()
         XCTAssertEqual(snapshot, .init(usedBytes: 16, fileCount: 1))

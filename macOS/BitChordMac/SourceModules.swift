@@ -839,7 +839,10 @@ final class SourceModuleManager: ObservableObject {
         indexURLString = storedURL
         label = defaults.string(forKey: Self.labelKey) ?? ""
         enabled = defaults.object(forKey: Self.enabledKey) as? Bool ?? true
-        jioSaavnEnabled = defaults.object(forKey: Self.jioSaavnEnabledKey) as? Bool ?? true
+        // A text match from a different catalogue must never silently replace
+        // the exact YouTube Music video the user selected. JioSaavn remains an
+        // explicit catalogue/search option, but starts disabled.
+        jioSaavnEnabled = defaults.object(forKey: Self.jioSaavnEnabledKey) as? Bool ?? false
         health = storedURL.isEmpty ? .notConfigured : .checking
         if let session {
             service = ModuleSourceService(session: session)
@@ -1007,7 +1010,6 @@ final class SourceModuleManager: ObservableObject {
 final class SourceAwarePlaybackResolver: PlaybackStreamResolving {
     private let youtube: any PlaybackStreamResolving
     private let sources: SourceModuleManager
-    var onUpgradeAvailable: ((Track, ResolvedStream) -> Void)?
 
     init(youtube: any PlaybackStreamResolving, sources: SourceModuleManager) {
         self.youtube = youtube
@@ -1029,60 +1031,12 @@ final class SourceAwarePlaybackResolver: PlaybackStreamResolving {
             return stream
         }
 
-        let useModule = sources.canResolve
-        let useJioSaavn = sources.canResolveJioSaavn
-        guard useModule || useJioSaavn else { return try await youtube.resolveStream(for: track) }
-
-        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<ResolvedStream, Error>) in
-            var completed = false
-            var remaining = 1 + (useModule ? 1 : 0) + (useJioSaavn ? 1 : 0)
-            var youtubeFailure: Error?
-            var selectedStream: ResolvedStream?
-
-            @MainActor func receive(_ stream: ResolvedStream?, error: Error? = nil) {
-                remaining -= 1
-                if let error { youtubeFailure = error }
-                if let stream {
-                    if completed {
-                        if stream.info?.isMeaningfullyBetter(than: selectedStream?.info) == true {
-                            selectedStream = stream
-                            onUpgradeAvailable?(track, stream)
-                        }
-                    } else {
-                        completed = true
-                        selectedStream = stream
-                        continuation.resume(returning: stream)
-                    }
-                }
-                if remaining == 0, !completed {
-                    completed = true
-                    continuation.resume(throwing: youtubeFailure ?? YouTubeMusicAPIError.noPlayableStream)
-                }
-            }
-
-            if useModule {
-                Task { [weak self] in
-                    guard let self else { return }
-                    receive(await sources.resolveStream(for: track))
-                }
-            }
-
-            if useJioSaavn {
-                Task { [weak self] in
-                    guard let self else { return }
-                    receive(await sources.resolveJioSaavnStream(for: track))
-                }
-            }
-
-            Task { [weak self] in
-                guard let self else { return }
-                do {
-                    receive(try await youtube.resolveStream(for: track))
-                } catch {
-                    receive(nil, error: error)
-                }
-            }
-        }
+        // A YouTube row owns a stable videoId. Resolving it through a textual
+        // search in another catalogue can return a cover, edit or an entirely
+        // different recording under the correct artwork and lyrics. Keep that
+        // identity strict; source modules are still available for explicit
+        // lossless downloads and JioSaavn rows play from their own catalogue.
+        return try await youtube.resolveStream(for: track)
     }
 
     func invalidateResolvedStream(for track: Track) {

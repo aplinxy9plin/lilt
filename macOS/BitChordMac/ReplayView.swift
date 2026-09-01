@@ -3,6 +3,7 @@ import SwiftUI
 struct ReplayView: View {
     @ObservedObject var model: AppModel
     @ObservedObject var replay: ReplayViewModel
+    let compact: Bool
     @State private var storyStart: ReplayStoryPage?
 
     private var refreshToken: String {
@@ -10,38 +11,41 @@ struct ReplayView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 28) {
-                header
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 28) {
+                    header
 
-                if replay.isLoading, replay.summary.isEmpty {
-                    HStack(spacing: 10) {
-                        ProgressView().controlSize(.small)
-                        Text("Building your Replay…").foregroundStyle(.secondary)
+                    if replay.isLoading, replay.summary.isEmpty {
+                        HStack(spacing: 10) {
+                            ProgressView().controlSize(.small)
+                            Text("Building your Replay…").foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 220)
+                    } else if replay.summary.isEmpty {
+                        emptyState
+                    } else {
+                        hero
+                        metricGrid
+                        charts
+                        habits
                     }
-                    .frame(maxWidth: .infinity, minHeight: 220)
-                } else if replay.summary.isEmpty {
-                    emptyState
-                } else {
-                    hero
-                    metricGrid
-                    charts
-                    habits
-                }
 
-                if let errorMessage = replay.errorMessage {
-                    Text(errorMessage)
-                        .font(.caption)
-                        .foregroundStyle(.red)
+                    if let errorMessage = replay.errorMessage {
+                        Text(errorMessage)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
                 }
+                .frame(width: compact ? max(1, proxy.size.width - 48) : nil, alignment: .leading)
+                .padding(.horizontal, 24)
+                .padding(.top, 28)
+                .padding(.bottom, 52)
             }
-            .padding(.horizontal, 34)
-            .padding(.top, 28)
-            .padding(.bottom, 52)
-        }
-        .scrollIndicators(.hidden)
-        .refreshable {
-            await replay.refresh()
+            .scrollIndicators(.hidden)
+            .refreshable {
+                await replay.refresh()
+            }
         }
         .task(id: refreshToken) {
             await replay.refresh()
@@ -52,33 +56,59 @@ struct ReplayView: View {
     }
 
     private var header: some View {
-        HStack(alignment: .center, spacing: 16) {
-            VStack(alignment: .leading, spacing: 5) {
-                Text("Replay")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
-                Text("The music you actually played on this Mac")
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
-            .frame(minWidth: 240, alignment: .leading)
-            Spacer()
-            if !replay.summary.isEmpty {
-                Button {
-                    storyStart = .intro
-                } label: {
-                    Label("Play Replay", systemImage: "play.fill")
+        Group {
+            if compact {
+                VStack(alignment: .leading, spacing: 5) {
+                    headerTitle
+                    periodPicker
+                        .padding(.top, 8)
+                    replayButton
+                        .padding(.top, 4)
                 }
-                .buttonStyle(ReplayPlayButtonStyle())
-            }
-            Picker("Period", selection: $replay.period) {
-                ForEach(ReplayPeriod.allCases) { period in
-                    Text(period.title).tag(period)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                HStack(alignment: .center, spacing: 16) {
+                    headerTitle
+                        .frame(minWidth: 240, alignment: .leading)
+                    Spacer()
+                    replayButton
+                    periodPicker
                 }
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .frame(width: 260)
         }
+    }
+
+    private var headerTitle: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text("Replay")
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+            Text("The music you actually played on this Mac")
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    @ViewBuilder
+    private var replayButton: some View {
+        if !replay.summary.isEmpty {
+            Button {
+                storyStart = .intro
+            } label: {
+                Label("Play Replay", systemImage: "play.fill")
+            }
+            .buttonStyle(ReplayPlayButtonStyle())
+        }
+    }
+
+    private var periodPicker: some View {
+        Picker("Period", selection: $replay.period) {
+            ForEach(ReplayPeriod.allCases) { period in
+                Text(period.title).tag(period)
+            }
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .frame(maxWidth: 260)
     }
 
     private var emptyState: some View {
@@ -116,6 +146,39 @@ struct ReplayView: View {
         .overlay {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .stroke(Color.primary.opacity(0.07), lineWidth: 1)
+        }
+    }
+
+    @ViewBuilder
+    private var artistChart: some View {
+        if !replay.summary.artists.isEmpty {
+            namedChart(title: "Top Artists", rows: replay.summary.artists)
+        }
+    }
+
+    @ViewBuilder
+    private var albumChart: some View {
+        if !replay.summary.albums.isEmpty {
+            namedChart(title: "Top Albums", rows: replay.summary.albums)
+        }
+    }
+
+    private func namedChart(title: String, rows: [ReplayNamedStat]) -> some View {
+        ReplayChartCard(title: title, subtitle: nil) {
+            VStack(spacing: 0) {
+                ForEach(Array(rows.prefix(5).enumerated()), id: \.element.id) { index, row in
+                    ReplayChartRow(
+                        rank: index + 1,
+                        title: row.title,
+                        subtitle: row.subtitle,
+                        artworkURL: row.artworkURL,
+                        milliseconds: row.milliseconds,
+                        plays: row.plays,
+                        showsPlay: false
+                    )
+                    if index < min(rows.count, 5) - 1 { Divider().opacity(0.45) }
+                }
+            }
         }
     }
 
@@ -210,7 +273,7 @@ struct ReplayView: View {
 
     private var metricGrid: some View {
         LazyVGrid(
-            columns: Array(repeating: GridItem(.flexible(minimum: 145), spacing: 14), count: 4),
+            columns: [GridItem(.adaptive(minimum: 140), spacing: 14)],
             alignment: .leading,
             spacing: 14
         ) {
@@ -275,42 +338,16 @@ struct ReplayView: View {
             }
         }
 
-        HStack(alignment: .top, spacing: 16) {
-            if !replay.summary.artists.isEmpty {
-                ReplayChartCard(title: "Top Artists", subtitle: nil) {
-                    VStack(spacing: 0) {
-                        ForEach(Array(replay.summary.artists.prefix(5).enumerated()), id: \.element.id) { index, row in
-                            ReplayChartRow(
-                                rank: index + 1,
-                                title: row.title,
-                                subtitle: row.subtitle,
-                                artworkURL: row.artworkURL,
-                                milliseconds: row.milliseconds,
-                                plays: row.plays,
-                                showsPlay: false
-                            )
-                            if index < min(replay.summary.artists.count, 5) - 1 { Divider().opacity(0.45) }
-                        }
-                    }
+        Group {
+            if compact {
+                VStack(spacing: 16) {
+                    artistChart
+                    albumChart
                 }
-            }
-
-            if !replay.summary.albums.isEmpty {
-                ReplayChartCard(title: "Top Albums", subtitle: nil) {
-                    VStack(spacing: 0) {
-                        ForEach(Array(replay.summary.albums.prefix(5).enumerated()), id: \.element.id) { index, row in
-                            ReplayChartRow(
-                                rank: index + 1,
-                                title: row.title,
-                                subtitle: row.subtitle,
-                                artworkURL: row.artworkURL,
-                                milliseconds: row.milliseconds,
-                                plays: row.plays,
-                                showsPlay: false
-                            )
-                            if index < min(replay.summary.albums.count, 5) - 1 { Divider().opacity(0.45) }
-                        }
-                    }
+            } else {
+                HStack(alignment: .top, spacing: 16) {
+                    artistChart
+                    albumChart
                 }
             }
         }
@@ -339,34 +376,60 @@ struct ReplayView: View {
 
     private var habits: some View {
         ReplayChartCard(title: "Your Rhythm", subtitle: "When Lilt was part of your day") {
-            HStack(spacing: 18) {
-                ReplayHabit(
-                    systemImage: "sun.max.fill",
-                    title: "Favorite hour",
-                    value: replay.summary.busiestHour.map(formatHour) ?? "—",
-                    detail: listeningTime(replay.summary.busiestHourMilliseconds),
-                    tint: .orange
-                )
-                Divider().frame(height: 76)
-                ReplayHabit(
-                    systemImage: "calendar",
-                    title: "Biggest day",
-                    value: replay.summary.busiestDay.map(formatDay) ?? "—",
-                    detail: listeningTime(replay.summary.busiestDayMilliseconds),
-                    tint: .pink
-                )
-                if let memberSince = replay.summary.memberSince {
-                    Divider().frame(height: 76)
-                    ReplayHabit(
-                        systemImage: "sparkles",
-                        title: "Counting since",
-                        value: memberSince.formatted(date: .abbreviated, time: .omitted),
-                        detail: "Stored only on this Mac",
-                        tint: .purple
-                    )
+            Group {
+                if compact {
+                    VStack(spacing: 14) {
+                        favoriteHourHabit
+                        Divider()
+                        biggestDayHabit
+                        if replay.summary.memberSince != nil {
+                            Divider()
+                            memberSinceHabit
+                        }
+                    }
+                } else {
+                    HStack(spacing: 18) {
+                        favoriteHourHabit
+                        Divider().frame(height: 76)
+                        biggestDayHabit
+                        if replay.summary.memberSince != nil {
+                            Divider().frame(height: 76)
+                            memberSinceHabit
+                        }
+                    }
                 }
             }
         }
+    }
+
+    private var favoriteHourHabit: some View {
+        ReplayHabit(
+            systemImage: "sun.max.fill",
+            title: "Favorite hour",
+            value: replay.summary.busiestHour.map(formatHour) ?? "—",
+            detail: listeningTime(replay.summary.busiestHourMilliseconds),
+            tint: .orange
+        )
+    }
+
+    private var biggestDayHabit: some View {
+        ReplayHabit(
+            systemImage: "calendar",
+            title: "Biggest day",
+            value: replay.summary.busiestDay.map(formatDay) ?? "—",
+            detail: listeningTime(replay.summary.busiestDayMilliseconds),
+            tint: .pink
+        )
+    }
+
+    private var memberSinceHabit: some View {
+        ReplayHabit(
+            systemImage: "sparkles",
+            title: "Counting since",
+            value: replay.summary.memberSince?.formatted(date: .abbreviated, time: .omitted) ?? "—",
+            detail: "Stored only on this Mac",
+            tint: .purple
+        )
     }
 
     private func grouped(_ number: Int) -> String {

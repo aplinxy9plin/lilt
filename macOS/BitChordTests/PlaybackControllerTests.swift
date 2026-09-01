@@ -991,6 +991,47 @@ final class PlaybackControllerTests: XCTestCase {
         XCTAssertEqual(resolved, helperURL.path)
     }
 
+    func testPlaybackHelperResolverPrefersBundledExecutableOverHostInstall() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("BitChordHelperPriorityTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let bundleURL = root.appendingPathComponent("Lilt.app", isDirectory: true)
+        let bundled = bundleURL.appendingPathComponent("Contents/Resources/PlaybackHelpers/yt-dlp/yt-dlp")
+        let external = root.appendingPathComponent("host-yt-dlp")
+        try FileManager.default.createDirectory(at: bundled.deletingLastPathComponent(), withIntermediateDirectories: true)
+        XCTAssertTrue(FileManager.default.createFile(atPath: bundled.path, contents: Data()))
+        XCTAssertTrue(FileManager.default.createFile(atPath: external.path, contents: Data()))
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: bundled.path)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: external.path)
+
+        let resolved = YouTubeMusicAPI.playbackHelperExecutablePath(
+            bundledRelativePath: "Contents/Resources/PlaybackHelpers/yt-dlp/yt-dlp",
+            bundleURL: bundleURL,
+            externalCandidates: [external.path]
+        )
+
+        XCTAssertEqual(resolved, bundled.path)
+    }
+
+    func testPlaybackFallbackTriesAuthenticatedThenCookieFreeYouTubeClients() {
+        XCTAssertEqual(
+            YouTubeMusicAPI.playbackFallbackAttempts(hasCookies: true),
+            [
+                PlaybackFallbackAttempt(extractorClient: "tv_downgraded", includesCookies: true),
+                PlaybackFallbackAttempt(extractorClient: "web_embedded", includesCookies: true),
+                PlaybackFallbackAttempt(extractorClient: "tv_downgraded", includesCookies: false),
+                PlaybackFallbackAttempt(extractorClient: "web_embedded", includesCookies: false)
+            ]
+        )
+        XCTAssertEqual(
+            YouTubeMusicAPI.playbackFallbackAttempts(hasCookies: false),
+            [
+                PlaybackFallbackAttempt(extractorClient: "tv_downgraded", includesCookies: false),
+                PlaybackFallbackAttempt(extractorClient: "web_embedded", includesCookies: false)
+            ]
+        )
+    }
+
     func testYTDLPReceivesExplicitBundledJavaScriptRuntime() {
         XCTAssertEqual(
             YouTubeMusicAPI.ytdlpRuntimeArguments(

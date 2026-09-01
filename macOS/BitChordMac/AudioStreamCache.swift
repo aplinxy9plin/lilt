@@ -201,7 +201,10 @@ actor AudioStreamCache {
 
     private func cacheKey(videoID: String, quality: AudioQuality) -> String {
         let safeVideoID = videoID.filter { $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" }
-        return "stream-\(safeVideoID)-\(quality.rawValue)"
+        // v2 deliberately abandons files written by the old source race. That
+        // race could cache a JioSaavn text match under a YouTube video ID and
+        // keep replaying the wrong recording even after the resolver was fixed.
+        return "stream-youtube-v2-\(safeVideoID)-\(quality.rawValue)"
     }
 
     private func touch(_ url: URL) {

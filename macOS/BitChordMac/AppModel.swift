@@ -3352,22 +3352,34 @@ final class PlaybackController: ObservableObject {
 
     private func configureRemoteCommands() {
         let commands = MPRemoteCommandCenter.shared()
+        commands.playCommand.isEnabled = true
         commands.playCommand.addTarget { [weak self] _ in
-            guard let self, !isPlaying else { return .commandFailed }
+            guard let self, currentTrack != nil, !isPlaying else { return .commandFailed }
             togglePlayback()
             return .success
         }
+        commands.pauseCommand.isEnabled = true
         commands.pauseCommand.addTarget { [weak self] _ in
             guard let self, isPlaying else { return .commandFailed }
             togglePlayback()
             return .success
         }
-        commands.nextTrackCommand.addTarget { [weak self] _ in
-            self?.next()
+        commands.togglePlayPauseCommand.isEnabled = true
+        commands.togglePlayPauseCommand.addTarget { [weak self] _ in
+            guard let self, currentTrack != nil else { return .commandFailed }
+            togglePlayback()
             return .success
         }
+        commands.nextTrackCommand.isEnabled = true
+        commands.nextTrackCommand.addTarget { [weak self] _ in
+            guard let self, currentTrack != nil else { return .commandFailed }
+            next()
+            return .success
+        }
+        commands.previousTrackCommand.isEnabled = true
         commands.previousTrackCommand.addTarget { [weak self] _ in
-            self?.previous()
+            guard let self, currentTrack != nil else { return .commandFailed }
+            previous()
             return .success
         }
         commands.changeRepeatModeCommand.isEnabled = true
@@ -3440,6 +3452,7 @@ final class PlaybackController: ObservableObject {
     private func updateNowPlaying() {
         guard let currentTrack else {
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+            MPNowPlayingInfoCenter.default().playbackState = .stopped
             return
         }
         var info: [String: Any] = [
@@ -3451,6 +3464,7 @@ final class PlaybackController: ObservableObject {
         ]
         if duration > 0 { info[MPMediaItemPropertyPlaybackDuration] = duration }
         MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+        MPNowPlayingInfoCenter.default().playbackState = isPlaying ? .playing : .paused
     }
 }
 
@@ -3711,10 +3725,6 @@ final class AppModel: ObservableObject {
         )
         self.player = player
         self.downloads = downloads
-
-        playbackResolver.onUpgradeAvailable = { [weak player] track, stream in
-            player?.upgradeCurrentTrack(track, to: stream)
-        }
 
         playbackSettings.onChange = { [weak api, weak player, weak sources] quality, skipSilence, crossfadeSeconds in
             api?.setPlaybackQuality(quality)

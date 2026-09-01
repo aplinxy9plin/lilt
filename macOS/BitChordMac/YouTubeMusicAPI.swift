@@ -107,6 +107,11 @@ struct ParsedYTDLPStream: Sendable {
     let availableAt: TimeInterval?
 }
 
+struct PlaybackFallbackAttempt: Equatable, Sendable {
+    let extractorClient: String
+    let includesCookies: Bool
+}
+
 struct YouTubeSignatureCipher: Equatable, Sendable {
     let url: URL
     let encryptedSignature: String
@@ -1146,6 +1151,15 @@ final class YouTubeMusicAPI: PlaybackStreamResolving, PlaybackHistoryAPI, Autopl
         )
     }
 
+    nonisolated static func playbackFallbackAttempts(hasCookies: Bool) -> [PlaybackFallbackAttempt] {
+        let clients = ["tv_downgraded", "web_embedded"]
+        if hasCookies {
+            return clients.map { PlaybackFallbackAttempt(extractorClient: $0, includesCookies: true) }
+                + clients.map { PlaybackFallbackAttempt(extractorClient: $0, includesCookies: false) }
+        }
+        return clients.map { PlaybackFallbackAttempt(extractorClient: $0, includesCookies: false) }
+    }
+
     private func cachedPlaybackFallbackURL(
         videoID: String,
         quality: AudioQuality
@@ -1581,12 +1595,13 @@ final class YouTubeMusicAPI: PlaybackStreamResolving, PlaybackHistoryAPI, Autopl
         externalCandidates: [String],
         fileManager: FileManager = .default
     ) -> String? {
-        var candidates = externalCandidates
+        var candidates: [String] = []
         if let bundleURL {
             candidates.append(
                 bundleURL.appendingPathComponent(bundledRelativePath).path
             )
         }
+        candidates += externalCandidates
         return candidates.first(where: { fileManager.isExecutableFile(atPath: $0) })
     }
 
@@ -1993,6 +2008,7 @@ with YoutubeDL(params) as ydl:
         }
         let denoPath = denoExecutablePath()
         let formatSelector = playbackFormatSelector(for: quality)
+        let attempts = Self.playbackFallbackAttempts(hasCookies: !cookieHeader.isEmpty)
 
         let processBox = DownloadProcessBox()
         let worker = Task.detached(priority: .userInitiated) {
@@ -2001,53 +2017,53 @@ with YoutubeDL(params) as ydl:
                 if let cookieFile { try? FileManager.default.removeItem(at: cookieFile) }
             }
 
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: executablePath)
-            var arguments = [
-                "--quiet",
-                "--no-warnings",
-                "--no-playlist",
-                "--no-part",
-                "--socket-timeout", "15",
-                "--retries", "2",
-                "--fragment-retries", "2",
-                // The web embedded client is slower to expose the low AAC
-                // ladder, but its media URLs remain valid for a complete
-                // fallback download. Android VR URLs can require a PO token.
-                "--extractor-args", "youtube:player_client=web_embedded",
-                "--format", formatSelector,
-                "--output", outputPath
-            ]
-            arguments += Self.ytdlpCookieArguments(cookieFile: cookieFile)
-            arguments += Self.ytdlpRuntimeArguments(denoPath: denoPath)
-            arguments.append("https://music.youtube.com/watch?v=\(videoID)")
-            process.arguments = arguments
+            for attempt in attempts {
+                try Task.checkCancellation()
+                Self.removeYTDLPArtifacts(outputBase: outputBase)
+                let process = Process()
+                process.executableURL = URL(fileURLWithPath: executablePath)
+                var arguments = [
+                    "--quiet",
+                    "--no-warnings",
+                    "--no-playlist",
+                    "--no-part",
+                    "--socket-timeout", "15",
+                    "--retries", "1",
+                    "--fragment-retries", "1",
+                    "--extractor-args", Self.ytdlpExtractorArguments(for: attempt.extractorClient),
+                    "--format", formatSelector,
+                    "--output", outputPath
+                ]
+                if attempt.includesCookies {
+                    arguments += Self.ytdlpCookieArguments(cookieFile: cookieFile)
+                }
+                arguments += Self.ytdlpRuntimeArguments(denoPath: denoPath)
+                arguments.append("https://music.youtube.com/watch?v=\(videoID)")
+                process.arguments = arguments
 
-            let outputPipe = Pipe()
-            let errorPipe = Pipe()
-            process.standardOutput = outputPipe
-            process.standardError = errorPipe
-            guard processBox.install(process) else { throw CancellationError() }
-            do {
-                try process.run()
-            } catch {
+                let outputPipe = Pipe()
+                let errorPipe = Pipe()
+                process.standardOutput = outputPipe
+                process.standardError = errorPipe
+                guard processBox.install(process) else { throw CancellationError() }
+                do {
+                    try process.run()
+                    process.waitUntilExit()
+                } catch {
+                    processBox.clear()
+                    continue
+                }
+                _ = outputPipe.fileHandleForReading.readDataToEndOfFile()
+                _ = errorPipe.fileHandleForReading.readDataToEndOfFile()
                 processBox.clear()
-                throw error
-            }
-            process.waitUntilExit()
-            _ = outputPipe.fileHandleForReading.readDataToEndOfFile()
-            _ = errorPipe.fileHandleForReading.readDataToEndOfFile()
-            processBox.clear()
-            try Task.checkCancellation()
-            let producedURL = outputBase.appendingPathExtension("m4a")
+                try Task.checkCancellation()
+                let producedURL = outputBase.appendingPathExtension("m4a")
 
-            guard process.terminationStatus == 0,
-                  FileManager.default.fileExists(atPath: producedURL.path),
-                  let attributes = try? FileManager.default.attributesOfItem(atPath: producedURL.path),
-                  (attributes[.size] as? NSNumber)?.intValue ?? 0 > 0 else {
-                throw YouTubeMusicAPIError.noPlayableStream
+                if process.terminationStatus == 0, Self.fileHasData(producedURL) {
+                    return producedURL
+                }
             }
-            return producedURL
+            throw YouTubeMusicAPIError.noPlayableStream
         }
 
         do {

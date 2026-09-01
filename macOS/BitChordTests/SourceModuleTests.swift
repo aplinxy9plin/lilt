@@ -249,9 +249,9 @@ final class JioSaavnTests: XCTestCase {
             jioSaavnService: service,
             autoRefreshHealth: false
         )
-        XCTAssertTrue(manager.jioSaavnEnabled)
-        manager.setJioSaavnEnabled(false)
         XCTAssertFalse(manager.jioSaavnEnabled)
+        manager.setJioSaavnEnabled(true)
+        XCTAssertTrue(manager.jioSaavnEnabled)
 
         let restored = SourceModuleManager(
             defaults: defaults,
@@ -259,7 +259,43 @@ final class JioSaavnTests: XCTestCase {
             jioSaavnService: service,
             autoRefreshHealth: false
         )
-        XCTAssertFalse(restored.jioSaavnEnabled)
+        XCTAssertTrue(restored.jioSaavnEnabled)
+    }
+
+    func testYouTubeRowNeverRacesATextMatchedJioSaavnStream() async throws {
+        JioSaavnFixtureURLProtocol.requestCount = 0
+        let suite = "BitChordTests.ExactYouTube.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let service = JioSaavnService(
+            session: session,
+            endpoint: try XCTUnwrap(URL(string: "https://jiosaavn.fixture/api.php"))
+        )
+        let manager = SourceModuleManager(
+            defaults: defaults,
+            session: session,
+            jioSaavnService: service,
+            autoRefreshHealth: false
+        )
+        manager.setJioSaavnEnabled(true)
+        manager.setPlaybackQuality(.high)
+        let youtube = ExactYouTubeResolver()
+        let resolver = SourceAwarePlaybackResolver(youtube: youtube, sources: manager)
+        let target = Track(
+            videoID: "youtube-video-id",
+            title: "Night Drive",
+            artist: "Test Artist",
+            album: nil,
+            artworkURL: nil,
+            duration: 243,
+            localPath: nil,
+            sourceURL: nil
+        )
+
+        let stream = try await resolver.resolveStream(for: target)
+
+        XCTAssertEqual(stream.url.absoluteString, "https://youtube.fixture/exact-video.m4a")
+        XCTAssertEqual(JioSaavnFixtureURLProtocol.requestCount, 0)
     }
 }
 
@@ -315,6 +351,7 @@ private final class ModuleFixtureURLProtocol: URLProtocol {
 private final class JioSaavnFixtureURLProtocol: URLProtocol {
     static var receivedAndroidContext = false
     static var receivedRegionalHeaders = false
+    static var requestCount = 0
 
     override class func canInit(with request: URLRequest) -> Bool {
         request.url?.host == "jiosaavn.fixture"
@@ -323,6 +360,7 @@ private final class JioSaavnFixtureURLProtocol: URLProtocol {
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
     override func startLoading() {
+        Self.requestCount += 1
         guard let url = request.url,
               let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return }
         let query = Dictionary(uniqueKeysWithValues: (components.queryItems ?? []).compactMap { item in
@@ -364,4 +402,31 @@ private final class JioSaavnFixtureURLProtocol: URLProtocol {
     }
 
     override func stopLoading() {}
+}
+
+@MainActor
+private final class ExactYouTubeResolver: PlaybackStreamResolving {
+    var isAuthenticated: Bool { true }
+
+    func resolveStream(for track: Track) async throws -> ResolvedStream {
+        ResolvedStream(
+            url: URL(string: "https://youtube.fixture/exact-video.m4a")!,
+            headers: [:],
+            videoID: track.videoID,
+            info: AudioStreamInfo(
+                requestedQuality: .high,
+                bitrateKbps: 128,
+                codec: "AAC",
+                sampleRate: 44_100,
+                channels: 2,
+                sourceName: "YouTube Music"
+            )
+        )
+    }
+
+    func downloadPlaybackFallback(for track: Track) async throws -> URL {
+        throw YouTubeMusicAPIError.noPlayableStream
+    }
+
+    func lyrics(for track: Track) async throws -> Lyrics? { nil }
 }

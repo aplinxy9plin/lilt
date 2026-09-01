@@ -8,6 +8,7 @@ struct BitChordRootView: View {
     @ObservedObject private var downloads: DownloadManager
     @ObservedObject private var playbackSettings: PlaybackSettings
     @State private var showNowPlaying = false
+    @State private var availableWidth: CGFloat = 1_020
     @StateObject private var artworkTheme = ArtworkThemeLoader()
 
     init(model: AppModel, player: PlaybackController) {
@@ -21,40 +22,38 @@ struct BitChordRootView: View {
         "\(playbackSettings.dynamicArtworkTheme)|\(player.currentTrack?.artworkURL ?? "none")"
     }
 
+    private var compactLayout: Bool { availableWidth < 820 }
+
     var body: some View {
-        NavigationSplitView {
-            SidebarView(
-                selection: $model.section,
-                libraryCount: model.libraryItemCount,
-                downloads: model.downloads,
-                youtubeSignedIn: model.youtubeSignedIn,
-                onSignIn: { model.showLogin = true },
-                onSignOut: model.signOutYouTube,
-                onImport: model.importAudio
-            )
-            .ignoresSafeArea(.container, edges: .top)
-        } detail: {
-            ZStack {
-                BitChordBackground()
-                detailView
-            }
-            .ignoresSafeArea(.container, edges: .top)
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                if player.currentTrack != nil {
-                    MiniPlayer(
-                        player: player,
-                        theme: artworkTheme.colors,
-                        reduceDynamicBlur: playbackSettings.reduceDynamicBlur,
-                        onExpand: { showNowPlaying = true }
+        Group {
+            if compactLayout {
+                playerDetail(compact: true)
+            } else {
+                NavigationSplitView {
+                    SidebarView(
+                        selection: $model.section,
+                        libraryCount: model.libraryItemCount,
+                        downloads: model.downloads,
+                        youtubeSignedIn: model.youtubeSignedIn,
+                        onSignIn: { model.showLogin = true },
+                        onSignOut: model.signOutYouTube,
+                        onImport: model.importAudio
                     )
-                    .environment(\.colorScheme, .dark)
-                    .padding(.horizontal, 8)
-                    .padding(.bottom, 8)
+                    .ignoresSafeArea(.container, edges: .top)
+                } detail: {
+                    playerDetail(compact: false)
                 }
+                .navigationSplitViewStyle(.balanced)
             }
         }
-        .navigationSplitViewStyle(.balanced)
-        .frame(minWidth: 1_020, minHeight: 680)
+        .frame(minWidth: 390, minHeight: 620)
+        .background {
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { availableWidth = proxy.size.width }
+                    .onChange(of: proxy.size.width) { availableWidth = $0 }
+            }
+        }
         .preferredColorScheme(playbackSettings.themeMode.preferredColorScheme)
         .overlay(alignment: .topTrailing) {
             if model.linkLoading {
@@ -169,8 +168,36 @@ struct BitChordRootView: View {
         }
     }
 
+    private func playerDetail(compact: Bool) -> some View {
+        ZStack {
+            BitChordBackground()
+            detailView(compact: compact)
+        }
+        .ignoresSafeArea(.container, edges: .top)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            VStack(spacing: 6) {
+                if player.currentTrack != nil {
+                    MiniPlayer(
+                        model: model,
+                        player: player,
+                        theme: artworkTheme.colors,
+                        reduceDynamicBlur: playbackSettings.reduceDynamicBlur,
+                        compact: compact,
+                        onExpand: { showNowPlaying = true }
+                    )
+                    .environment(\.colorScheme, .dark)
+                }
+                if compact {
+                    CompactNavigationBar(selection: $model.section)
+                }
+            }
+            .padding(.horizontal, 8)
+            .padding(.bottom, 8)
+        }
+    }
+
     @ViewBuilder
-    private var detailView: some View {
+    private func detailView(compact: Bool) -> some View {
         switch model.section {
         case .home:
             HomeView(model: model)
@@ -179,14 +206,15 @@ struct BitChordRootView: View {
         case .search:
             SearchView(model: model)
         case .library:
-            LibraryView(model: model)
+            LibraryView(model: model, compact: compact)
         case .downloads:
-            DownloadsView(model: model)
+            DownloadsView(model: model, compact: compact)
         case .replay:
-            ReplayView(model: model, replay: model.replay)
+            ReplayView(model: model, replay: model.replay, compact: compact)
         case .settings:
             PlaybackSettingsView(
                 model: model,
+                compact: compact,
                 settings: model.playbackSettings,
                 player: player,
                 downloads: model.downloads,
@@ -196,6 +224,68 @@ struct BitChordRootView: View {
                 equalizer: model.equalizer
             )
         }
+    }
+}
+
+private struct CompactNavigationBar: View {
+    @Binding var selection: AppSection
+
+    private let primarySections: [AppSection] = [.home, .explore, .search, .library]
+    private let secondarySections: [AppSection] = [.downloads, .replay, .settings]
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(primarySections) { section in
+                Button {
+                    selection = section
+                } label: {
+                    compactLabel(section, selected: selection == section)
+                }
+                .buttonStyle(.plain)
+            }
+
+            Menu {
+                ForEach(secondarySections) { section in
+                    Button {
+                        selection = section
+                    } label: {
+                        Label(section.title, systemImage: section.systemImage)
+                    }
+                }
+            } label: {
+                VStack(spacing: 3) {
+                    Image(systemName: "ellipsis.circle.fill")
+                        .font(.system(size: 16, weight: .semibold))
+                    Text("More")
+                        .font(.system(size: 9, weight: .semibold))
+                }
+                .foregroundStyle(secondarySections.contains(selection) ? Color.pink : Color.secondary)
+                .frame(maxWidth: .infinity, minHeight: 42)
+                .contentShape(Rectangle())
+            }
+            .menuStyle(.borderlessButton)
+        }
+        .padding(4)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+        }
+        .shadow(color: .black.opacity(0.12), radius: 10, y: 4)
+    }
+
+    private func compactLabel(_ section: AppSection, selected: Bool) -> some View {
+        VStack(spacing: 3) {
+            Image(systemName: section.systemImage)
+                .font(.system(size: 15, weight: .semibold))
+            Text(section.title)
+                .font(.system(size: 9, weight: .semibold))
+                .lineLimit(1)
+        }
+        .foregroundStyle(selected ? Color.pink : Color.secondary)
+        .frame(maxWidth: .infinity, minHeight: 42)
+        .background(selected ? Color.pink.opacity(0.1) : .clear, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .contentShape(Rectangle())
     }
 }
 
@@ -860,38 +950,28 @@ private struct SearchResultRow: View {
 
 struct LibraryView: View {
     @ObservedObject var model: AppModel
+    let compact: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("Library")
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
-                    Text("Your music, close at hand")
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                if model.youtubeSignedIn {
-                    Button { model.showCreatePlaylist = true } label: {
-                        Label("New Playlist", systemImage: "text.badge.plus")
+            Group {
+                if compact {
+                    VStack(alignment: .leading, spacing: 13) {
+                        libraryTitle
+                        ScrollView(.horizontal) {
+                            libraryActions
+                        }
+                        .scrollIndicators(.hidden)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.purple)
-                    Button(action: model.openHistory) {
-                        Label("History", systemImage: "clock.arrow.circlepath")
+                } else {
+                    HStack(alignment: .firstTextBaseline) {
+                        libraryTitle
+                        Spacer()
+                        libraryActions
                     }
-                    .buttonStyle(.bordered)
                 }
-                Button(action: model.importAudio) {
-                    Label("Add files", systemImage: "plus")
-                }
-                .buttonStyle(.bordered)
-                Button(action: model.addLocalFolder) {
-                    Label("Add Folder", systemImage: "folder.badge.plus")
-                }
-                .buttonStyle(.bordered)
             }
-            .padding(.horizontal, 34)
+            .padding(.horizontal, compact ? 24 : 34)
             .padding(.top, 30)
             .padding(.bottom, 24)
 
@@ -926,9 +1006,9 @@ struct LibraryView: View {
                         }
                     }
 
-                    LocalLibrarySection(model: model)
+                    LocalLibrarySection(model: model, compact: compact)
                 }
-                .padding(.horizontal, 34)
+                .padding(.horizontal, compact ? 24 : 34)
                 .padding(.bottom, 36)
             }
             .scrollIndicators(.hidden)
@@ -941,6 +1021,40 @@ struct LibraryView: View {
                 model.refreshLibrary()
             }
         }
+    }
+
+    private var libraryTitle: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text("Library")
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+            Text("Your music, close at hand")
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var libraryActions: some View {
+        HStack(spacing: 8) {
+            if model.youtubeSignedIn {
+                Button { model.showCreatePlaylist = true } label: {
+                    Label("New Playlist", systemImage: "text.badge.plus")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.purple)
+                Button(action: model.openHistory) {
+                    Label("History", systemImage: "clock.arrow.circlepath")
+                }
+                .buttonStyle(.bordered)
+            }
+            Button(action: model.importAudio) {
+                Label("Add files", systemImage: "plus")
+            }
+            .buttonStyle(.bordered)
+            Button(action: model.addLocalFolder) {
+                Label("Add Folder", systemImage: "folder.badge.plus")
+            }
+            .buttonStyle(.bordered)
+        }
+        .fixedSize(horizontal: true, vertical: false)
     }
 }
 
@@ -982,6 +1096,7 @@ private enum LocalLibraryTab: String, CaseIterable, Identifiable {
 
 private struct LocalLibrarySection: View {
     @ObservedObject var model: AppModel
+    let compact: Bool
     @State private var tab: LocalLibraryTab = .songs
     @State private var query = ""
     @State private var selectedCollection: LocalMediaCollection?
@@ -1008,57 +1123,33 @@ private struct LocalLibrarySection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("On This Mac")
-                        .font(.system(size: 21, weight: .bold, design: .rounded))
-                    Text("\(model.localTracks.count) songs · metadata and artwork from your files")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+            Group {
+                if compact {
+                    VStack(alignment: .leading, spacing: 12) {
+                        localLibraryTitle
+                        localLibraryActions
+                    }
+                } else {
+                    HStack(alignment: .center, spacing: 12) {
+                        localLibraryTitle
+                        Spacer()
+                        localLibraryActions
+                    }
                 }
-                Spacer()
-                if model.localLibraryLoading {
-                    ProgressView()
-                        .controlSize(.small)
-                }
-                Button(action: model.refreshLocalLibrary) {
-                    Label("Rescan", systemImage: "arrow.clockwise")
-                }
-                .buttonStyle(.bordered)
-                .disabled(model.localLibraryLoading)
-                Button(action: model.addLocalFolder) {
-                    Label("Add Folder", systemImage: "folder.badge.plus")
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.purple)
             }
 
-            HStack(spacing: 12) {
-                HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundStyle(.secondary)
-                    TextField("Search local music", text: $query)
-                        .textFieldStyle(.plain)
-                    if !query.isEmpty {
-                        Button { query = "" } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(.secondary)
-                        }
-                        .buttonStyle(.plain)
+            Group {
+                if compact {
+                    VStack(spacing: 10) {
+                        localSearchField
+                        localLibraryPicker
+                    }
+                } else {
+                    HStack(spacing: 12) {
+                        localSearchField
+                        localLibraryPicker
                     }
                 }
-                .padding(.horizontal, 11)
-                .frame(height: 34)
-                .background(Color.primary.opacity(0.065), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-
-                Picker("Local library view", selection: $tab) {
-                    ForEach(LocalLibraryTab.allCases) { item in
-                        Label(item.title, systemImage: item.systemImage).tag(item)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .frame(maxWidth: 430)
             }
 
             if let error = model.localLibraryError {
@@ -1080,6 +1171,65 @@ private struct LocalLibrarySection: View {
         .sheet(item: $selectedCollection) { collection in
             LocalCollectionDetailView(model: model, collection: collection)
         }
+    }
+
+    private var localLibraryTitle: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text("On This Mac")
+                .font(.system(size: 21, weight: .bold, design: .rounded))
+            Text("\(model.localTracks.count) songs · metadata and artwork from your files")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var localLibraryActions: some View {
+        HStack(spacing: 8) {
+            if model.localLibraryLoading {
+                ProgressView()
+                    .controlSize(.small)
+            }
+            Button(action: model.refreshLocalLibrary) {
+                Label("Rescan", systemImage: "arrow.clockwise")
+            }
+            .buttonStyle(.bordered)
+            .disabled(model.localLibraryLoading)
+            Button(action: model.addLocalFolder) {
+                Label("Add Folder", systemImage: "folder.badge.plus")
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.purple)
+        }
+    }
+
+    private var localSearchField: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+            TextField("Search local music", text: $query)
+                .textFieldStyle(.plain)
+            if !query.isEmpty {
+                Button { query = "" } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 11)
+        .frame(maxWidth: .infinity, minHeight: 34)
+        .background(Color.primary.opacity(0.065), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+    }
+
+    private var localLibraryPicker: some View {
+        Picker("Local library view", selection: $tab) {
+            ForEach(LocalLibraryTab.allCases) { item in
+                Label(item.title, systemImage: item.systemImage).tag(item)
+            }
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .frame(maxWidth: 430)
     }
 
     @ViewBuilder
@@ -1850,70 +2000,36 @@ struct DownloadsView: View {
     @ObservedObject var model: AppModel
     @ObservedObject private var downloads: DownloadManager
     @ObservedObject private var settings: PlaybackSettings
+    let compact: Bool
     @State private var selectedCollection: DownloadCollectionRecord?
 
-    init(model: AppModel) {
+    init(model: AppModel, compact: Bool) {
         self.model = model
+        self.compact = compact
         _downloads = ObservedObject(wrappedValue: model.downloads)
         _settings = ObservedObject(wrappedValue: model.playbackSettings)
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .center, spacing: 10) {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("Downloads")
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
-                    Text(downloads.saved.isEmpty
-                         ? "Music saved for offline listening"
-                         : "\(downloads.saved.count) \(downloads.saved.count == 1 ? "track" : "tracks") available offline")
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Menu {
-                    ForEach(DownloadQuality.allCases) { quality in
-                        Button {
-                            downloads.preferredQuality = quality
-                        } label: {
-                            if downloads.preferredQuality == quality {
-                                Label("\(quality.title) — \(quality.detail)", systemImage: "checkmark")
-                            } else {
-                                Text("\(quality.title) — \(quality.detail)")
-                            }
+            Group {
+                if compact {
+                    VStack(alignment: .leading, spacing: 13) {
+                        downloadsTitle
+                        ScrollView(.horizontal) {
+                            downloadActions
                         }
+                        .scrollIndicators(.hidden)
                     }
-                } label: {
-                    Label(downloads.preferredQuality.title, systemImage: downloads.preferredQuality.systemImage)
-                }
-                .menuStyle(.borderlessButton)
-                .fixedSize()
-                .help("Quality for new downloads")
-
-                Menu {
-                    ForEach(1...4, id: \.self) { count in
-                        Button {
-                            downloads.maximumParallelDownloads = count
-                        } label: {
-                            if downloads.maximumParallelDownloads == count {
-                                Label("\(count) at a time", systemImage: "checkmark")
-                            } else {
-                                Text("\(count) at a time")
-                            }
-                        }
+                } else {
+                    HStack(alignment: .center, spacing: 10) {
+                        downloadsTitle
+                        Spacer()
+                        downloadActions
                     }
-                } label: {
-                    Label("\(downloads.maximumParallelDownloads)", systemImage: "square.stack.3d.up.fill")
                 }
-                .menuStyle(.borderlessButton)
-                .fixedSize()
-                .help("Parallel downloads")
-
-                Button(action: downloads.openDownloadsFolder) {
-                    Label("Open Folder", systemImage: "folder")
-                }
-                .buttonStyle(.bordered)
             }
-            .padding(.horizontal, 34)
+            .padding(.horizontal, compact ? 24 : 34)
             .padding(.top, 30)
             .padding(.bottom, 24)
 
@@ -1941,7 +2057,7 @@ struct DownloadsView: View {
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .stroke(.orange.opacity(0.2), lineWidth: 1)
                 }
-                .padding(.horizontal, 34)
+                .padding(.horizontal, compact ? 24 : 34)
                 .padding(.bottom, 18)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
@@ -2028,7 +2144,7 @@ struct DownloadsView: View {
                         .frame(maxWidth: .infinity, minHeight: 330)
                     }
                 }
-                .padding(.horizontal, 34)
+                .padding(.horizontal, compact ? 24 : 34)
                 .padding(.bottom, 40)
             }
             .scrollIndicators(.hidden)
@@ -2036,6 +2152,65 @@ struct DownloadsView: View {
         .sheet(item: $selectedCollection) { collection in
             DownloadedCollectionDetail(model: model, downloads: downloads, collection: collection)
         }
+    }
+
+    private var downloadsTitle: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text("Downloads")
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+            Text(downloads.saved.isEmpty
+                 ? "Music saved for offline listening"
+                 : "\(downloads.saved.count) \(downloads.saved.count == 1 ? "track" : "tracks") available offline")
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var downloadActions: some View {
+        HStack(spacing: 8) {
+            Menu {
+                ForEach(DownloadQuality.allCases) { quality in
+                    Button {
+                        downloads.preferredQuality = quality
+                    } label: {
+                        if downloads.preferredQuality == quality {
+                            Label("\(quality.title) — \(quality.detail)", systemImage: "checkmark")
+                        } else {
+                            Text("\(quality.title) — \(quality.detail)")
+                        }
+                    }
+                }
+            } label: {
+                Label(downloads.preferredQuality.title, systemImage: downloads.preferredQuality.systemImage)
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            .help("Quality for new downloads")
+
+            Menu {
+                ForEach(1...4, id: \.self) { count in
+                    Button {
+                        downloads.maximumParallelDownloads = count
+                    } label: {
+                        if downloads.maximumParallelDownloads == count {
+                            Label("\(count) at a time", systemImage: "checkmark")
+                        } else {
+                            Text("\(count) at a time")
+                        }
+                    }
+                }
+            } label: {
+                Label("\(downloads.maximumParallelDownloads)", systemImage: "square.stack.3d.up.fill")
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            .help("Parallel downloads")
+
+            Button(action: downloads.openDownloadsFolder) {
+                Label("Open Folder", systemImage: "folder")
+            }
+            .buttonStyle(.bordered)
+        }
+        .fixedSize(horizontal: true, vertical: false)
     }
 }
 
@@ -2516,6 +2691,7 @@ private struct TrackListRow: View {
 
 struct PlaybackSettingsView: View {
     @ObservedObject var model: AppModel
+    let compact: Bool
     @ObservedObject var settings: PlaybackSettings
     @ObservedObject var player: PlaybackController
     @ObservedObject var downloads: DownloadManager
@@ -2528,8 +2704,9 @@ struct PlaybackSettingsView: View {
     @State private var connectingScrobbler: ScrobblingConnection?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 28) {
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 28) {
                 VStack(alignment: .leading, spacing: 5) {
                     Text("Settings")
                         .font(.system(size: 32, weight: .bold, design: .rounded))
@@ -2543,28 +2720,21 @@ struct PlaybackSettingsView: View {
                         subtitle: "Let the current record shape the player without sacrificing contrast."
                     )
                     VStack(spacing: 0) {
-                        HStack(spacing: 14) {
-                            Image(systemName: "circle.lefthalf.filled")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(.indigo)
-                                .frame(width: 34, height: 34)
-                                .background(.indigo.opacity(0.13), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text("Theme")
-                                    .font(.system(size: 14, weight: .semibold))
-                                Text("Follow macOS or keep Lilt light or dark")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer(minLength: 18)
-                            Picker("Theme", selection: $settings.themeMode) {
-                                ForEach(AppThemeMode.allCases, id: \.self) { mode in
-                                    Text(mode.title).tag(mode)
+                        Group {
+                            if compact {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    themeLabel
+                                    themePicker
+                                        .frame(maxWidth: .infinity)
+                                }
+                            } else {
+                                HStack(spacing: 14) {
+                                    themeLabel
+                                    Spacer(minLength: 18)
+                                    themePicker
+                                        .frame(width: 216)
                                 }
                             }
-                            .labelsHidden()
-                            .pickerStyle(.segmented)
-                            .frame(width: 216)
                         }
                         .padding(16)
 
@@ -2862,7 +3032,7 @@ struct PlaybackSettingsView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     SettingsSectionTitle(
                         title: "Audio Sources",
-                        subtitle: "Sources are tried in order. A miss is stepped over, so playback continues from the next catalogue."
+                        subtitle: "YouTube Music rows always play their exact video. Other catalogues stay explicit."
                     )
                     VStack(spacing: 0) {
                         HStack(spacing: 14) {
@@ -2911,7 +3081,7 @@ struct PlaybackSettingsView: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("2  JioSaavn")
                                     .font(.system(size: 14, weight: .semibold))
-                                Text("High-quality AAC · up to 320 kbps · built in")
+                                Text("Separate search catalogue · never substitutes a YouTube row")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -2936,7 +3106,7 @@ struct PlaybackSettingsView: View {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("3  YouTube Music")
                                     .font(.system(size: 14, weight: .semibold))
-                                Text("Full catalogue · playback fallback · always on")
+                                Text("Exact video identity · playback fallback · always on")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             }
@@ -2949,9 +3119,7 @@ struct PlaybackSettingsView: View {
                     }
                     .background(Color.primary.opacity(0.055), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
-                    Text(settings.effectiveQuality == .high
-                         ? "High quality is active: the module and JioSaavn race YouTube without delaying playback. A better late stream is aligned and blended in while the song keeps playing."
-                         : "The active network profile caps quality below High, so replacement-source lookup is paused to respect the data limit.")
+                    Text("Enabled JioSaavn results are clearly separate. The custom module remains available for explicit lossless downloads; neither source can replace the audio behind a YouTube Music card.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 4)
@@ -3657,12 +3825,13 @@ struct PlaybackSettingsView: View {
                         .padding(.horizontal, 4)
                 }
             }
-            .frame(maxWidth: 720, alignment: .leading)
-            .padding(.horizontal, 34)
-            .padding(.top, 28)
-            .padding(.bottom, 48)
+                .modifier(SettingsContentWidth(compact: compact, availableWidth: proxy.size.width))
+                .padding(.horizontal, compact ? 24 : 34)
+                .padding(.top, compact ? 18 : 28)
+                .padding(.bottom, 48)
+            }
+            .scrollIndicators(.hidden)
         }
-        .scrollIndicators(.hidden)
         .sheet(isPresented: $editingSource) {
             SourceModuleEditor(sources: sources)
         }
@@ -3678,6 +3847,33 @@ struct PlaybackSettingsView: View {
             }
         }
         .onAppear(perform: model.refreshAudioCacheSnapshot)
+    }
+
+    private var themeLabel: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "circle.lefthalf.filled")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.indigo)
+                .frame(width: 34, height: 34)
+                .background(.indigo.opacity(0.13), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Theme")
+                    .font(.system(size: 14, weight: .semibold))
+                Text("Follow macOS or keep Lilt light or dark")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var themePicker: some View {
+        Picker("Theme", selection: $settings.themeMode) {
+            ForEach(AppThemeMode.allCases, id: \.self) { mode in
+                Text(mode.title).tag(mode)
+            }
+        }
+        .labelsHidden()
+        .pickerStyle(.segmented)
     }
 
     private var sourceStatusColor: Color {
@@ -3697,6 +3893,20 @@ struct PlaybackSettingsView: View {
 
     private static func formatBytes(_ bytes: Int64) -> String {
         ByteCountFormatter.string(fromByteCount: bytes, countStyle: .binary)
+    }
+}
+
+private struct SettingsContentWidth: ViewModifier {
+    let compact: Bool
+    let availableWidth: CGFloat
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if compact {
+            content.frame(width: max(1, availableWidth - 48), alignment: .leading)
+        } else {
+            content.frame(maxWidth: 720, alignment: .leading)
+        }
     }
 }
 
@@ -4573,10 +4783,21 @@ private struct QualitySettingRow: View {
 }
 
 struct MiniPlayer: View {
+    @ObservedObject var model: AppModel
     @ObservedObject var player: PlaybackController
     let theme: ArtworkThemeColors
     let reduceDynamicBlur: Bool
+    let compact: Bool
     let onExpand: () -> Void
+
+    private var currentTrack: Track? { player.currentTrack }
+    private var canLike: Bool { currentTrack?.youtubeURL != nil }
+    private var isLiked: Bool {
+        currentTrack.map { model.likeStatus(for: $0) == .like } == true
+    }
+    private var ratingInFlight: Bool {
+        currentTrack?.videoID.map(model.ratingInFlight.contains) == true
+    }
 
     var body: some View {
         VStack(spacing: 7) {
@@ -4597,65 +4818,13 @@ struct MiniPlayer: View {
             .font(.system(size: 9, weight: .medium, design: .monospaced))
             .foregroundStyle(.tertiary)
 
-            ZStack {
-                HStack(spacing: 12) {
-                    Button(action: onExpand) {
-                        HStack(spacing: 11) {
-                            ArtworkView(
-                                url: player.currentTrack?.artworkURL,
-                                title: player.currentTrack?.title ?? "Lilt",
-                                size: 42
-                            )
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text(player.currentTrack?.title ?? "Nothing playing")
-                                    .font(.system(size: 12, weight: .semibold))
-                                    .lineLimit(1)
-                                Text(player.currentTrack?.artist ?? "")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                            }
-                        }
-                        .frame(width: 250, alignment: .leading)
-                    }
-                    .buttonStyle(.plain)
-
-                    Spacer()
-                    PlayerVolumeControl(
-                        volume: player.volume,
-                        onSetVolume: player.setVolume,
-                        onToggleMute: player.toggleMute,
-                        accentColors: [theme.accentColor, theme.washColor],
-                        foregroundColor: theme.onBackgroundColor
-                    )
-                    .frame(width: 190)
-                }
-
-                HStack(spacing: 16) {
-                    Button(action: player.previous) { Image(systemName: "backward.fill") }
-                    if player.isLoading {
-                        ProgressView()
-                            .controlSize(.small)
-                            .tint(.black)
-                            .frame(width: 32, height: 32)
-                            .background(theme.onBackgroundColor, in: Circle())
-                    } else {
-                        Button(action: player.togglePlayback) {
-                                Image(systemName: player.isPlaying ? "pause.fill" : "play.fill")
-                                    .frame(width: 32, height: 32)
-                                    .background(theme.onBackgroundColor, in: Circle())
-                                    .foregroundStyle(.black)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    Button(action: player.next) { Image(systemName: "forward.fill") }
-                }
-                .buttonStyle(.plain)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.white)
+            if compact {
+                compactControls
+            } else {
+                regularControls
             }
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, compact ? 12 : 20)
         .padding(.top, 10)
         .padding(.bottom, 11)
         .foregroundStyle(theme.onBackgroundColor)
@@ -4681,6 +4850,107 @@ struct MiniPlayer: View {
                 .stroke(.white.opacity(0.14), lineWidth: 1)
         }
         .shadow(color: .black.opacity(0.2), radius: 14, y: 5)
+    }
+
+    private var regularControls: some View {
+        ZStack {
+            HStack(spacing: 10) {
+                trackButton
+                    .frame(width: 230, alignment: .leading)
+                likeButton
+                Spacer(minLength: 120)
+                PlayerVolumeControl(
+                    volume: player.volume,
+                    onSetVolume: player.setVolume,
+                    onToggleMute: player.toggleMute,
+                    accentColors: [theme.accentColor, theme.washColor],
+                    foregroundColor: theme.onBackgroundColor
+                )
+                .frame(width: 170)
+            }
+            playbackButtons
+        }
+    }
+
+    private var compactControls: some View {
+        HStack(spacing: 9) {
+            trackButton
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .layoutPriority(1)
+            likeButton
+            playbackButtons
+        }
+    }
+
+    private var trackButton: some View {
+        Button(action: onExpand) {
+            HStack(spacing: compact ? 8 : 11) {
+                ArtworkView(
+                    url: currentTrack?.artworkURL,
+                    title: currentTrack?.title ?? "Lilt",
+                    size: compact ? 36 : 42
+                )
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(currentTrack?.title ?? "Nothing playing")
+                        .font(.system(size: 12, weight: .semibold))
+                        .lineLimit(1)
+                    Text(currentTrack?.artist ?? "")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var likeButton: some View {
+        Button {
+            if let currentTrack { model.toggleLike(currentTrack) }
+        } label: {
+            Group {
+                if ratingInFlight {
+                    ProgressView().controlSize(.mini)
+                } else {
+                    Image(systemName: isLiked ? "heart.fill" : "heart")
+                }
+            }
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundStyle(isLiked ? Color.pink : theme.onBackgroundColor)
+            .frame(width: 30, height: 30)
+            .background(.white.opacity(isLiked ? 0.14 : 0.08), in: Circle())
+            .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!canLike || ratingInFlight)
+        .opacity(canLike ? 1 : 0.42)
+        .help(isLiked ? "Remove from Liked Music" : "Add to Liked Music")
+    }
+
+    private var playbackButtons: some View {
+        HStack(spacing: compact ? 10 : 16) {
+            Button(action: player.previous) { Image(systemName: "backward.fill") }
+            if player.isLoading {
+                ProgressView()
+                    .controlSize(.small)
+                    .tint(.black)
+                    .frame(width: 32, height: 32)
+                    .background(theme.onBackgroundColor, in: Circle())
+            } else {
+                Button(action: player.togglePlayback) {
+                    Image(systemName: player.isPlaying ? "pause.fill" : "play.fill")
+                        .frame(width: 32, height: 32)
+                        .background(theme.onBackgroundColor, in: Circle())
+                        .foregroundStyle(.black)
+                }
+                .buttonStyle(.plain)
+            }
+            Button(action: player.next) { Image(systemName: "forward.fill") }
+        }
+        .buttonStyle(.plain)
+        .font(.system(size: 13, weight: .semibold))
+        .foregroundStyle(.white)
     }
 }
 

@@ -91,6 +91,16 @@
 		D9D100000000000000000001 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = D9D100000000000000000002 /* Sparkle */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		D9D100000000000000000004 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A70000010000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A50000010000000000000001;
+			remoteInfo = Lilt;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		A20000010000000000000000 /* Lilt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lilt.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000010000000000000001 /* BitChordMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitChordMacApp.swift; sourceTree = "<group>"; };
@@ -304,6 +314,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				D9D100000000000000000005 /* PBXTargetDependency */,
 			);
 			name = BitChordTests;
 			productName = BitChordTests;
@@ -458,6 +469,14 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		D9D100000000000000000005 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A50000010000000000000001 /* Lilt */;
+			targetProxy = D9D100000000000000000004 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
 		A80000010000000000000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -500,7 +519,7 @@
 				CODE_SIGNING_REQUIRED = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 54K55SFZ83;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BitChordMac/Info.plist;
@@ -509,7 +528,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.2.0;
+				MARKETING_VERSION = 0.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pogozhev.lilt;
 				PRODUCT_MODULE_NAME = BitChord;
 				PRODUCT_NAME = Lilt;
@@ -531,7 +550,7 @@
 				CODE_SIGNING_REQUIRED = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 54K55SFZ83;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -541,7 +560,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 0.2.0;
+				MARKETING_VERSION = 0.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pogozhev.lilt;
 				PRODUCT_MODULE_NAME = BitChord;
 				PRODUCT_NAME = Lilt;

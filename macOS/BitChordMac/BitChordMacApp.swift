@@ -12,7 +12,7 @@ struct BitChordMacApp: App {
     }
 
     var body: some Scene {
-        Window("Lilt", id: "main") {
+        WindowGroup("Lilt") {
             BitChordRootView(model: model, player: model.player)
                 .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)) { _ in
                     model.player.savePlaybackState()
@@ -50,6 +50,10 @@ struct BitChordMacApp: App {
 }
 
 private final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
+    }
+
     func applicationDidBecomeActive(_ notification: Notification) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             Self.removeUnusedMenuItems()
