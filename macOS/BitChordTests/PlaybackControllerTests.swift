@@ -965,6 +965,40 @@ final class PlaybackControllerTests: XCTestCase {
         )
     }
 
+    func testYTDLPExtractorCarriesTheActiveYouTubeAccountScope() {
+        XCTAssertEqual(
+            YouTubeMusicAPI.ytdlpExtractorArguments(
+                for: "tv_downgraded",
+                dataSyncID: "active-account-scope"
+            ),
+            "youtube:player_client=tv_downgraded;player_skip=webpage,configs;data_sync_id=active-account-scope"
+        )
+        XCTAssertEqual(
+            YouTubeMusicAPI.ytdlpExtractorArguments(
+                for: "web_embedded",
+                dataSyncID: "active-account-scope"
+            ),
+            "youtube:player_client=web_embedded;data_sync_id=active-account-scope"
+        )
+        XCTAssertEqual(
+            YouTubeMusicAPI.ytdlpExtractorArguments(
+                for: "web_embedded",
+                dataSyncID: "invalid;player_client=web"
+            ),
+            "youtube:player_client=web_embedded",
+            "Account scope must not be able to inject another extractor option"
+        )
+    }
+
+    func testCompactNowPlayingSizingFitsTheMinimumAppWidth() {
+        let sizing = NowPlayingLayoutSizing(compact: true)
+
+        XCTAssertLessThanOrEqual(sizing.minimumWidth, 390)
+        XCTAssertLessThanOrEqual(sizing.idealWidth, 390)
+        XCTAssertEqual(sizing.maximumWidth, 390)
+        XCTAssertEqual(NowPlayingLayoutSizing(compact: false).minimumWidth, 900)
+    }
+
     func testPlaybackHelperResolverFallsBackToBundledExecutable() throws {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("BitChordHelperTests-\(UUID().uuidString)", isDirectory: true)

@@ -979,6 +979,7 @@ final class YouTubeMusicAPI: PlaybackStreamResolving, PlaybackHistoryAPI, Autopl
         // unciphered URL can start immediately while WEB_EMBEDDED remains the
         // reliable answer for networks that reject every device client.
         let authenticatedCookie = cookieHeader
+        let activeDataSyncID = sessionScope?.dataSyncID
         let preferredKey = preferredStreamClientKey
         let hasExtractor = ytdlpExecutablePath() != nil
         var candidates: [@Sendable () async -> ResolvedStream?] = []
@@ -1030,7 +1031,8 @@ final class YouTubeMusicAPI: PlaybackStreamResolving, PlaybackHistoryAPI, Autopl
                         videoID: videoID,
                         cookieHeader: authenticatedCookie,
                         quality: quality,
-                        extractorClient: extractorClient
+                        extractorClient: extractorClient,
+                        dataSyncID: activeDataSyncID
                     )
                 }
             }
@@ -1110,7 +1112,8 @@ final class YouTubeMusicAPI: PlaybackStreamResolving, PlaybackHistoryAPI, Autopl
         videoID: String,
         cookieHeader: String,
         quality: AudioQuality,
-        extractorClient: String
+        extractorClient: String,
+        dataSyncID: String?
     ) async -> ResolvedStream? {
         let startedAt = Date()
         guard !Task.isCancelled,
@@ -1118,7 +1121,8 @@ final class YouTubeMusicAPI: PlaybackStreamResolving, PlaybackHistoryAPI, Autopl
                   videoID: videoID,
                   cookieHeader: cookieHeader,
                   quality: quality,
-                  extractorClient: extractorClient
+                  extractorClient: extractorClient,
+                  dataSyncID: dataSyncID
               ),
               !Task.isCancelled,
               await probe(stream) else { return nil }
@@ -1144,10 +1148,12 @@ final class YouTubeMusicAPI: PlaybackStreamResolving, PlaybackHistoryAPI, Autopl
 
     func downloadPlaybackFallback(for track: Track) async throws -> URL {
         guard let videoID = track.videoID else { throw YouTubeMusicAPIError.noPlayableStream }
+        await prepareWebSession()
         return try await downloadWithYTDLP(
             videoID: videoID,
             cookieHeader: cookieHeader ?? "",
-            quality: playbackQuality
+            quality: playbackQuality,
+            dataSyncID: sessionScope?.dataSyncID
         )
     }
 
@@ -1189,6 +1195,7 @@ final class YouTubeMusicAPI: PlaybackStreamResolving, PlaybackHistoryAPI, Autopl
         to directory: URL,
         progress: @escaping @MainActor (Double) -> Void
     ) async throws -> URL {
+        await prepareWebSession()
         guard let videoID = track.videoID,
               let executablePath = ytdlpExecutablePath() else {
             throw YouTubeMusicAPIError.noPlayableStream
@@ -1206,6 +1213,7 @@ final class YouTubeMusicAPI: PlaybackStreamResolving, PlaybackHistoryAPI, Autopl
 
         let processBox = DownloadProcessBox()
         let cookieHeader = cookieHeader ?? ""
+        let dataSyncID = sessionScope?.dataSyncID
         let ffmpegPath = ffmpegExecutablePath()
         let denoPath = denoExecutablePath()
         let worker = Task.detached(priority: .utility) {
@@ -1228,7 +1236,10 @@ final class YouTubeMusicAPI: PlaybackStreamResolving, PlaybackHistoryAPI, Autopl
                 "--socket-timeout", "20",
                 "--retries", "3",
                 "--fragment-retries", "3",
-                "--extractor-args", "youtube:player_client=web_embedded",
+                "--extractor-args", Self.ytdlpExtractorArguments(
+                    for: "web_embedded",
+                    dataSyncID: dataSyncID
+                ),
                 "--format", formatSelector,
                 "--extract-audio",
                 "--audio-format", "m4a",
@@ -1345,14 +1356,18 @@ final class YouTubeMusicAPI: PlaybackStreamResolving, PlaybackHistoryAPI, Autopl
         videoID: String,
         cookieHeader: String,
         quality: AudioQuality,
-        extractorClient: String
+        extractorClient: String,
+        dataSyncID: String?
     ) async throws -> ResolvedStream {
         guard let executablePath = ytdlpExecutablePath() else {
             throw YouTubeMusicAPIError.noPlayableStream
         }
 
         let formatSelector = playbackFormatSelector(for: quality)
-        let extractorClients = Self.ytdlpExtractorArguments(for: extractorClient)
+        let extractorClients = Self.ytdlpExtractorArguments(
+            for: extractorClient,
+            dataSyncID: dataSyncID
+        )
         let denoPath = denoExecutablePath()
         let processBox = DownloadProcessBox()
         let worker = Task.detached(priority: .userInitiated) {
@@ -1419,11 +1434,28 @@ final class YouTubeMusicAPI: PlaybackStreamResolving, PlaybackHistoryAPI, Autopl
         return parsed.stream
     }
 
-    nonisolated static func ytdlpExtractorArguments(for client: String) -> String {
+    nonisolated static func ytdlpExtractorArguments(
+        for client: String,
+        dataSyncID: String? = nil
+    ) -> String {
+        var options = ["player_client=\(client)"]
         if client == "tv_downgraded" {
-            return "youtube:player_client=tv_downgraded;player_skip=webpage,configs"
+            options.append("player_skip=webpage,configs")
         }
-        return "youtube:player_client=\(client)"
+        if let rawDataSyncID = dataSyncID,
+           let dataSyncID = sanitizedYTDLPDataSyncID(rawDataSyncID) {
+            options.append("data_sync_id=\(dataSyncID)")
+        }
+        return "youtube:\(options.joined(separator: ";"))"
+    }
+
+    private nonisolated static func sanitizedYTDLPDataSyncID(_ rawValue: String) -> String? {
+        let value = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !value.isEmpty,
+              !value.contains(";"),
+              !value.contains("\n"),
+              !value.contains("\r") else { return nil }
+        return value
     }
 
     nonisolated static func ytdlpRuntimeArguments(denoPath: String?) -> [String] {
@@ -1964,10 +1996,12 @@ with YoutubeDL(params) as ydl:
 
     func downloadStream(_ stream: ResolvedStream) async throws -> URL {
         if let videoID = stream.videoID {
+            await prepareWebSession()
             return try await downloadWithYTDLP(
                 videoID: videoID,
                 cookieHeader: stream.headers["Cookie"] ?? "",
-                quality: stream.info?.requestedQuality ?? playbackQuality
+                quality: stream.info?.requestedQuality ?? playbackQuality,
+                dataSyncID: sessionScope?.dataSyncID
             )
         }
 
@@ -1994,7 +2028,8 @@ with YoutubeDL(params) as ydl:
     private func downloadWithYTDLP(
         videoID: String,
         cookieHeader: String,
-        quality: AudioQuality
+        quality: AudioQuality,
+        dataSyncID: String?
     ) async throws -> URL {
         let cacheDirectory = playbackStreamCacheDirectory()
         try FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
@@ -2030,7 +2065,10 @@ with YoutubeDL(params) as ydl:
                     "--socket-timeout", "15",
                     "--retries", "1",
                     "--fragment-retries", "1",
-                    "--extractor-args", Self.ytdlpExtractorArguments(for: attempt.extractorClient),
+                    "--extractor-args", Self.ytdlpExtractorArguments(
+                        for: attempt.extractorClient,
+                        dataSyncID: attempt.includesCookies ? dataSyncID : nil
+                    ),
                     "--format", formatSelector,
                     "--output", outputPath
                 ]

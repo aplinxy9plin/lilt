@@ -83,7 +83,8 @@ struct BitChordRootView: View {
                 model: model,
                 player: player,
                 artworkTheme: artworkTheme,
-                canvas: model.canvas
+                canvas: model.canvas,
+                compact: compactLayout
             )
         }
         .task(id: artworkThemeRequestKey) {
@@ -5102,6 +5103,7 @@ struct NowPlayingView: View {
     @ObservedObject var player: PlaybackController
     @ObservedObject var artworkTheme: ArtworkThemeLoader
     @ObservedObject var canvas: CanvasController
+    let compact: Bool
     @Environment(\.dismiss) private var dismiss
     @State private var panel: NowPlayingPanel = .lyrics
 
@@ -5120,7 +5122,12 @@ struct NowPlayingView: View {
         let artworkWidth: CGFloat = fullBleedArtwork ? 420 : 280
         let artworkHeight: CGFloat = fullBleedArtwork ? 250 : 280
         let artworkCornerRadius: CGFloat = fullBleedArtwork ? 18 : 29
-        ZStack {
+        let sizing = NowPlayingLayoutSizing(compact: compact)
+        Group {
+            if compact {
+                compactContent(theme: theme)
+            } else {
+                ZStack {
             ArtworkThemeBackdrop(
                 colors: theme,
                 reduceAnimation: model.playbackSettings.reduceAnimation,
@@ -5129,26 +5136,26 @@ struct NowPlayingView: View {
                 .ignoresSafeArea()
             HStack(spacing: 46) {
                 VStack(spacing: 12) {
-                    ZStack {
+                    HStack(spacing: 8) {
+                        Button("Done") { dismiss() }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(Color.white.opacity(0.88))
+                            .frame(width: 64, height: 44, alignment: .leading)
+                            .contentShape(Rectangle())
+                        Spacer(minLength: 0)
                         Text("NOW PLAYING")
                             .font(.system(size: 10, weight: .bold, design: .rounded))
                             .tracking(1.5)
                             .foregroundStyle(theme.secondaryTextColor.opacity(0.72))
-
-                        HStack {
-                            Button("Done") { dismiss() }
-                                .buttonStyle(.plain)
-                                .foregroundStyle(theme.secondaryTextColor)
-                                .frame(minWidth: 64, minHeight: 44, alignment: .leading)
-                                .contentShape(Rectangle())
-                            Spacer()
-                            PlaybackOptionsMenu(
-                                model: model,
-                                player: player,
-                                settings: model.playbackSettings,
-                                onNavigate: { dismiss() }
-                            )
-                        }
+                            .fixedSize()
+                        Spacer(minLength: 0)
+                        PlaybackOptionsMenu(
+                            model: model,
+                            player: player,
+                            settings: model.playbackSettings,
+                            onNavigate: { dismiss() }
+                        )
+                        .frame(width: 64, alignment: .trailing)
                     }
                     .frame(height: 44)
                     .contentShape(Rectangle())
@@ -5349,10 +5356,18 @@ struct NowPlayingView: View {
             }
             .padding(.horizontal, 36)
             .padding(.vertical, 24)
+                }
+            }
         }
         .foregroundStyle(theme.onBackgroundColor)
         .tint(theme.accentColor)
-        .frame(minWidth: 900, minHeight: 680)
+        .frame(
+            minWidth: sizing.minimumWidth,
+            idealWidth: sizing.idealWidth,
+            maxWidth: sizing.maximumWidth,
+            minHeight: sizing.minimumHeight,
+            idealHeight: sizing.idealHeight
+        )
         .preferredColorScheme(.dark)
         .task { player.loadLyrics() }
         .task(id: canvasRequestKey) {
@@ -5360,6 +5375,200 @@ struct NowPlayingView: View {
         }
         .sheet(item: $model.playlistTrack) { track in
             PlaylistPickerView(model: model, track: track)
+        }
+    }
+
+    private func compactContent(theme: ArtworkThemeColors) -> some View {
+        ZStack {
+            ArtworkThemeBackdrop(
+                colors: theme,
+                reduceAnimation: model.playbackSettings.reduceAnimation,
+                reduceDynamicBlur: model.playbackSettings.reduceDynamicBlur
+            )
+            .ignoresSafeArea()
+
+            ScrollView {
+                VStack(spacing: 14) {
+                    HStack(spacing: 8) {
+                        Button("Done") { dismiss() }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(Color.white.opacity(0.88))
+                            .frame(width: 64, height: 44, alignment: .leading)
+                            .contentShape(Rectangle())
+                        Spacer(minLength: 0)
+                        Text("NOW PLAYING")
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .tracking(1.5)
+                            .foregroundStyle(theme.secondaryTextColor.opacity(0.72))
+                            .fixedSize()
+                        Spacer(minLength: 0)
+                        PlaybackOptionsMenu(
+                            model: model,
+                            player: player,
+                            settings: model.playbackSettings,
+                            onNavigate: { dismiss() }
+                        )
+                        .frame(width: 64, alignment: .trailing)
+                    }
+                    .frame(height: 44)
+                    .contentShape(Rectangle())
+                    .zIndex(20)
+
+                    ZStack(alignment: .bottom) {
+                        ArtworkView(
+                            url: player.currentTrack?.artworkURL,
+                            title: player.currentTrack?.title ?? "Lilt",
+                            width: 230,
+                            height: 230,
+                            cornerRadius: 24
+                        )
+                        if let artwork = canvas.artwork {
+                            CanvasVideoView(artwork: artwork, onReady: canvas.markRendered)
+                                .frame(width: 230, height: 230)
+                                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                                .opacity(canvas.rendered ? 1 : 0)
+                                .animation(.easeInOut(duration: 0.45), value: canvas.rendered)
+                                .accessibilityLabel("Animated cover art from \(artwork.source.title)")
+                        }
+                    }
+                    .frame(width: 230, height: 230)
+                    .shadow(color: theme.accentColor.opacity(0.28), radius: 34)
+
+                    VStack(spacing: 5) {
+                        Text(player.currentTrack?.title ?? "Nothing playing")
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .lineLimit(2)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(theme.onBackgroundColor)
+                        Text(player.currentTrack?.artist ?? "")
+                            .lineLimit(1)
+                            .foregroundStyle(theme.secondaryTextColor)
+                    }
+
+                    if let track = player.currentTrack, track.videoID != nil, !track.isLocal {
+                        HStack(spacing: 22) {
+                            Button { model.toggleLike(track) } label: {
+                                Image(systemName: model.likeStatus(for: track) == .like ? "heart.fill" : "heart")
+                                    .foregroundStyle(model.likeStatus(for: track) == .like ? theme.accentColor : theme.secondaryTextColor)
+                                    .frame(width: 38, height: 34)
+                                    .contentShape(Rectangle())
+                            }
+                            .disabled(track.videoID.map(model.ratingInFlight.contains) == true)
+                            .help(model.likeStatus(for: track) == .like ? "Remove like" : "Like")
+
+                            Button { model.presentPlaylistPicker(for: track) } label: {
+                                Image(systemName: "text.badge.plus")
+                                    .foregroundStyle(theme.secondaryTextColor)
+                                    .frame(width: 38, height: 34)
+                                    .contentShape(Rectangle())
+                            }
+                            .help("Add to playlist")
+                        }
+                        .buttonStyle(.plain)
+                        .font(.system(size: 18, weight: .semibold))
+                    }
+
+                    PlayerProgressBar(
+                        progress: player.progress,
+                        duration: player.duration,
+                        isEnabled: !player.isLoading,
+                        onSeek: player.seek,
+                        playedColors: [theme.accentColor, theme.washColor]
+                    )
+                    HStack {
+                        Text(formatTime(player.progress))
+                        Spacer()
+                        Text(formatTime(player.duration))
+                    }
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(theme.secondaryTextColor.opacity(0.72))
+
+                    if !model.playbackSettings.hideVolumeBar {
+                        PlayerVolumeControl(
+                            volume: player.volume,
+                            onSetVolume: player.setVolume,
+                            onToggleMute: player.toggleMute,
+                            accentColors: [theme.accentColor, theme.washColor],
+                            foregroundColor: theme.secondaryTextColor
+                        )
+                    }
+
+                    HStack(spacing: 30) {
+                        Button(action: player.previous) { Image(systemName: "backward.fill") }
+                        if player.isLoading {
+                            ProgressView()
+                                .controlSize(.regular)
+                                .tint(.black)
+                                .frame(width: 56, height: 56)
+                                .background(theme.onBackgroundColor, in: Circle())
+                        } else {
+                            Button(action: player.togglePlayback) {
+                                Image(systemName: player.isPlaying ? "pause.fill" : "play.fill")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .frame(width: 56, height: 56)
+                                    .background(theme.onBackgroundColor, in: Circle())
+                                    .foregroundStyle(.black)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        Button(action: player.next) { Image(systemName: "forward.fill") }
+                    }
+                    .buttonStyle(.plain)
+                    .font(.system(size: 16, weight: .semibold))
+
+                    HStack(spacing: 8) {
+                        PlaybackModeButton(
+                            title: "Shuffle",
+                            systemImage: "shuffle",
+                            isActive: player.shuffleEnabled,
+                            accent: theme.accentColor,
+                            action: player.toggleShuffle
+                        )
+                        PlaybackModeButton(
+                            title: player.repeatMode.title,
+                            systemImage: player.repeatMode.systemImage,
+                            isActive: player.repeatMode != .off,
+                            accent: theme.accentColor,
+                            action: player.cycleRepeatMode
+                        )
+                        PlaybackModeButton(
+                            title: "AutoPlay",
+                            systemImage: "infinity",
+                            isActive: model.playbackSettings.autoplay,
+                            accent: theme.accentColor,
+                            action: { model.playbackSettings.autoplay.toggle() }
+                        )
+                    }
+
+                    Divider()
+                        .overlay(theme.dividerColor)
+                        .padding(.vertical, 4)
+
+                    Picker("Now Playing Panel", selection: $panel) {
+                        ForEach(NowPlayingPanel.allCases) { item in
+                            Text(item.title).tag(item)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .tint(theme.accentColor)
+
+                    Group {
+                        switch panel {
+                        case .lyrics:
+                            NowPlayingLyricsPanel(player: player)
+                        case .queue:
+                            NowPlayingQueuePanel(player: player)
+                        }
+                    }
+                    .frame(height: 300)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 24)
+            }
+            .scrollIndicators(.hidden)
         }
     }
 
@@ -5486,7 +5695,7 @@ private struct PlaybackOptionsMenu: View {
             }
         } label: {
             Image(systemName: "ellipsis.circle")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.white.opacity(0.82))
                 .font(.system(size: 17))
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())

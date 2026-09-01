@@ -1,5 +1,29 @@
 import Foundation
 
+struct NowPlayingLayoutSizing: Equatable {
+    let minimumWidth: CGFloat
+    let idealWidth: CGFloat
+    let maximumWidth: CGFloat
+    let minimumHeight: CGFloat
+    let idealHeight: CGFloat
+
+    init(compact: Bool) {
+        if compact {
+            minimumWidth = 360
+            idealWidth = 390
+            maximumWidth = 390
+            minimumHeight = 620
+            idealHeight = 700
+        } else {
+            minimumWidth = 900
+            idealWidth = 900
+            maximumWidth = 1_080
+            minimumHeight = 680
+            idealHeight = 680
+        }
+    }
+}
+
 enum AppSection: String, CaseIterable, Identifiable {
     case home
     case explore
