@@ -2227,12 +2227,6 @@ with YoutubeDL(params) as ydl:
         authenticated: Bool,
         body: [String: Any]
     ) async throws -> [String: Any] {
-        guard var components = URLComponents(url: base.appendingPathComponent(endpoint), resolvingAgainstBaseURL: false) else {
-            throw YouTubeMusicAPIError.invalidResponse
-        }
-        components.queryItems = [URLQueryItem(name: "prettyPrint", value: "false")]
-        guard let url = components.url else { throw YouTubeMusicAPIError.invalidResponse }
-
         let clientVersion = client.name == "WEB_REMIX"
             ? (sessionScope?.clientVersion ?? client.version)
             : client.version
@@ -2259,39 +2253,81 @@ with YoutubeDL(params) as ydl:
         var payload = body
         payload["context"] = context
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(client.origin, forHTTPHeaderField: "Origin")
-        request.setValue(client.origin.map { "\($0)/" }, forHTTPHeaderField: "Referer")
-        request.setValue(client.origin, forHTTPHeaderField: "X-Origin")
-        request.setValue(client.id, forHTTPHeaderField: "X-YouTube-Client-Name")
-        request.setValue(clientVersion, forHTTPHeaderField: "X-YouTube-Client-Version")
-        request.setValue(client.userAgent, forHTTPHeaderField: "User-Agent")
-        if let visitorData { request.setValue(visitorData, forHTTPHeaderField: "X-Goog-Visitor-Id") }
-        if authenticated, let cookieHeader {
-            request.setValue(cookieHeader, forHTTPHeaderField: "Cookie")
-            request.setValue(sessionScope?.authUser ?? "0", forHTTPHeaderField: "X-Goog-AuthUser")
-            if let pageID = sessionScope?.pageID {
-                request.setValue(pageID, forHTTPHeaderField: "X-Goog-PageId")
+        let requestBody = try JSONSerialization.data(withJSONObject: payload)
+        var lastError: Error?
+        for requestBase in requestBases(for: base) {
+            guard var components = URLComponents(
+                url: requestBase.appendingPathComponent(endpoint),
+                resolvingAgainstBaseURL: false
+            ) else {
+                throw YouTubeMusicAPIError.invalidResponse
             }
-            request.setValue(sapisidHash(for: cookieHeader, origin: client.origin ?? "https://www.youtube.com"), forHTTPHeaderField: "Authorization")
-        }
-        request.timeoutInterval = 20
+            components.queryItems = [URLQueryItem(name: "prettyPrint", value: "false")]
+            guard let url = components.url else { throw YouTubeMusicAPIError.invalidResponse }
 
-        let (data, response) = try await session.data(for: request)
-        guard let http = response as? HTTPURLResponse else { throw YouTubeMusicAPIError.invalidResponse }
-        guard (200..<300).contains(http.statusCode) else { throw YouTubeMusicAPIError.httpStatus(http.statusCode) }
-        guard let object = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            throw YouTubeMusicAPIError.malformedData
+            let requestOrigin = requestBase.host == youtubeBase.host
+                ? "https://www.youtube.com"
+                : (client.origin ?? "https://music.youtube.com")
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.httpBody = requestBody
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue(requestOrigin, forHTTPHeaderField: "Origin")
+            request.setValue("\(requestOrigin)/", forHTTPHeaderField: "Referer")
+            request.setValue(requestOrigin, forHTTPHeaderField: "X-Origin")
+            request.setValue(client.id, forHTTPHeaderField: "X-YouTube-Client-Name")
+            request.setValue(clientVersion, forHTTPHeaderField: "X-YouTube-Client-Version")
+            request.setValue(client.userAgent, forHTTPHeaderField: "User-Agent")
+            if let visitorData { request.setValue(visitorData, forHTTPHeaderField: "X-Goog-Visitor-Id") }
+            if authenticated, let cookieHeader {
+                request.setValue(cookieHeader, forHTTPHeaderField: "Cookie")
+                request.setValue(sessionScope?.authUser ?? "0", forHTTPHeaderField: "X-Goog-AuthUser")
+                if let pageID = sessionScope?.pageID {
+                    request.setValue(pageID, forHTTPHeaderField: "X-Goog-PageId")
+                }
+                request.setValue(sapisidHash(for: cookieHeader, origin: requestOrigin), forHTTPHeaderField: "Authorization")
+            }
+            request.timeoutInterval = 20
+
+            do {
+                let (data, response) = try await session.data(for: request)
+                guard let http = response as? HTTPURLResponse else { throw YouTubeMusicAPIError.invalidResponse }
+                guard (200..<300).contains(http.statusCode) else { throw YouTubeMusicAPIError.httpStatus(http.statusCode) }
+                guard let object = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                    throw YouTubeMusicAPIError.malformedData
+                }
+                if visitorData == nil,
+                   let responseContext = object["responseContext"] as? [String: Any],
+                   let responseVisitor = responseContext["visitorData"] as? String {
+                    visitorData = responseVisitor
+                }
+                return object
+            } catch {
+                lastError = error
+                guard requestBase.host == musicBase.host,
+                      requestBases(for: base).count > 1,
+                      Self.shouldFallbackToYouTubeHost(error) else {
+                    throw error
+                }
+                streamLogger.info(
+                    "YouTube host \(requestBase.host ?? "unknown", privacy: .public) unavailable; retrying API request on www.youtube.com"
+                )
+            }
         }
-        if visitorData == nil,
-           let responseContext = object["responseContext"] as? [String: Any],
-           let responseVisitor = responseContext["visitorData"] as? String {
-            visitorData = responseVisitor
-        }
-        return object
+
+        throw lastError ?? YouTubeMusicAPIError.invalidResponse
+    }
+
+    private func requestBases(for base: URL) -> [URL] {
+        guard base.host == musicBase.host else { return [base] }
+        return [base, youtubeBase]
+    }
+
+    private nonisolated static func shouldFallbackToYouTubeHost(_ error: Error) -> Bool {
+        let nsError = error as NSError
+        guard nsError.domain == NSURLErrorDomain else { return false }
+        return nsError.code == URLError.cannotFindHost.rawValue
+            || nsError.code == URLError.dnsLookupFailed.rawValue
     }
 
     private func prepareWebSession() async {
@@ -2304,44 +2340,58 @@ with YoutubeDL(params) as ydl:
     /// Innertube request must repeat that scope or Library quietly resolves to
     /// the first/anonymous identity in the jar.
     private func ensureSessionScope() async {
-        guard sessionScope == nil, let cookieHeader,
-              let url = URL(string: "https://music.youtube.com/") else { return }
-        var request = URLRequest(url: url)
-        request.setValue(webClient.userAgent, forHTTPHeaderField: "User-Agent")
-        request.setValue("en-US,en;q=0.9", forHTTPHeaderField: "Accept-Language")
-        request.setValue(cookieHeader, forHTTPHeaderField: "Cookie")
-        request.setValue(sapisidHash(for: cookieHeader, origin: "https://music.youtube.com"), forHTTPHeaderField: "Authorization")
-        request.timeoutInterval = 20
+        guard sessionScope == nil, let cookieHeader else { return }
+        let webHosts = [
+            (url: URL(string: "https://music.youtube.com/"), origin: "https://music.youtube.com"),
+            (url: URL(string: "https://www.youtube.com/"), origin: "https://www.youtube.com")
+        ]
 
-        guard let (data, response) = try? await session.data(for: request),
-              let http = response as? HTTPURLResponse,
-              (200..<300).contains(http.statusCode),
-              let html = String(data: data, encoding: .utf8) else { return }
+        for webHost in webHosts {
+            guard let url = webHost.url else { continue }
+            var request = URLRequest(url: url)
+            request.setValue(webClient.userAgent, forHTTPHeaderField: "User-Agent")
+            request.setValue("en-US,en;q=0.9", forHTTPHeaderField: "Accept-Language")
+            request.setValue(cookieHeader, forHTTPHeaderField: "Cookie")
+            request.setValue(sapisidHash(for: cookieHeader, origin: webHost.origin), forHTTPHeaderField: "Authorization")
+            request.timeoutInterval = 20
 
-        let clientVersion = capture(#""INNERTUBE_CLIENT_VERSION"\s*:\s*"([^"]+)""#, in: html)
-        let signedIn = capture(#""LOGGED_IN"\s*:\s*(true|false)"#, in: html) == "true"
-        if let shellVisitor = capture(#""VISITOR_DATA"\s*:\s*"([^"]+)""#, in: html), !shellVisitor.isEmpty {
-            visitorData = shellVisitor
-        }
-
-        guard signedIn else {
-            if let clientVersion {
-                sessionScope = SessionScope(dataSyncID: nil, pageID: nil, authUser: "0", clientVersion: clientVersion)
+            guard let (data, response) = try? await session.data(for: request),
+                  let http = response as? HTTPURLResponse,
+                  (200..<300).contains(http.statusCode),
+                  let html = String(data: data, encoding: .utf8) else {
+                if webHost.origin == "https://music.youtube.com" {
+                    streamLogger.info("YouTube web host music.youtube.com unavailable; retrying session bootstrap on www.youtube.com")
+                    continue
+                }
+                return
             }
+
+            let clientVersion = capture(#""INNERTUBE_CLIENT_VERSION"\s*:\s*"([^"]+)""#, in: html)
+            let signedIn = capture(#""LOGGED_IN"\s*:\s*(true|false)"#, in: html) == "true"
+            if let shellVisitor = capture(#""VISITOR_DATA"\s*:\s*"([^"]+)""#, in: html), !shellVisitor.isEmpty {
+                visitorData = shellVisitor
+            }
+
+            guard signedIn else {
+                if let clientVersion {
+                    sessionScope = SessionScope(dataSyncID: nil, pageID: nil, authUser: "0", clientVersion: clientVersion)
+                }
+                return
+            }
+
+            let dataSyncID = capture(#""DATASYNC_ID"\s*:\s*"([^"]+)""#, in: html)?
+                .components(separatedBy: "||").first
+                .flatMap { $0.isEmpty ? nil : $0 }
+            let pageID = capture(#""DELEGATED_SESSION_ID"\s*:\s*"([^"]+)""#, in: html)
+            let authUser = capture(#""SESSION_INDEX"\s*:\s*"?(\d+)"#, in: html) ?? "0"
+            sessionScope = SessionScope(
+                dataSyncID: dataSyncID,
+                pageID: pageID?.isEmpty == false ? pageID : nil,
+                authUser: authUser,
+                clientVersion: clientVersion
+            )
             return
         }
-
-        let dataSyncID = capture(#""DATASYNC_ID"\s*:\s*"([^"]+)""#, in: html)?
-            .components(separatedBy: "||").first
-            .flatMap { $0.isEmpty ? nil : $0 }
-        let pageID = capture(#""DELEGATED_SESSION_ID"\s*:\s*"([^"]+)""#, in: html)
-        let authUser = capture(#""SESSION_INDEX"\s*:\s*"?(\d+)"#, in: html) ?? "0"
-        sessionScope = SessionScope(
-            dataSyncID: dataSyncID,
-            pageID: pageID?.isEmpty == false ? pageID : nil,
-            authUser: authUser,
-            clientVersion: clientVersion
-        )
     }
 
     private func capture(_ pattern: String, in text: String) -> String? {

@@ -140,6 +140,49 @@ final class YouTubeMusicWriteTests: XCTestCase {
         }
     }
 
+    func testHomeFallsBackToYouTubeHostWhenMusicHostCannotBeFound() async throws {
+        var musicHostRequests = 0
+        var youtubeHostRequests = 0
+        var fallbackRequestUsedBootstrappedVersion = false
+        var fallbackRequest: URLRequest?
+        let api = makeAPI { request in
+            switch request.url?.host {
+            case "music.youtube.com":
+                musicHostRequests += 1
+                throw URLError(.cannotFindHost)
+            case "www.youtube.com":
+                youtubeHostRequests += 1
+                if request.url?.path == "/" {
+                    let html = #"{"LOGGED_IN":true,"INNERTUBE_CLIENT_VERSION":"1.test","DATASYNC_ID":"active-account||x","SESSION_INDEX":"0","VISITOR_DATA":"CgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}"#
+                    return Self.response(for: request, data: Data(html.utf8))
+                }
+                if request.url?.path == "/sw.js_data" {
+                    return Self.response(for: request, data: Data("CgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".utf8))
+                }
+                if request.httpMethod == "POST",
+                   request.value(forHTTPHeaderField: "X-YouTube-Client-Version") == "1.test" {
+                    fallbackRequestUsedBootstrappedVersion = true
+                    fallbackRequest = request
+                }
+                return Self.response(for: request, json: Self.browseSections([]))
+            default:
+                return Self.response(for: request, json: Self.browseSections([]))
+            }
+        }
+
+        let shelves = try await api.home()
+
+        XCTAssertTrue(shelves.isEmpty)
+        XCTAssertGreaterThan(musicHostRequests, 0)
+        XCTAssertGreaterThan(youtubeHostRequests, 0)
+        XCTAssertTrue(fallbackRequestUsedBootstrappedVersion)
+        let request = try XCTUnwrap(fallbackRequest)
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Origin"), "https://www.youtube.com")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Referer"), "https://www.youtube.com/")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "X-Origin"), "https://www.youtube.com")
+        XCTAssertTrue(request.value(forHTTPHeaderField: "Authorization")?.hasPrefix("SAPISIDHASH ") == true)
+    }
+
     func testEditablePlaylistHeaderEnablesOwnedPlaylistActions() async throws {
         let api = makeAPI { request in
             if request.httpMethod == "POST" {
